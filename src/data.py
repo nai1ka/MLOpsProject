@@ -48,5 +48,56 @@ def validate_initial_data():
     )
 
     # Validations
-    ex1 = validator.expect_column_values_to_be_unique(column="id")
-    assert ex1['success']
+    # id: unique, not null, pattern of UUID
+    validator.expect_column_values_to_not_be_null("id")
+    validator.expect_column_values_to_be_unique("id")
+    validator.expect_column_values_to_match_regex("id",
+                                                  r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
+
+    # price: not null, >0, is of type float
+
+    validator.expect_column_values_to_be_between("price", min_value=0, max_value=None, strict_min=True)
+    validator.expect_column_values_to_be_of_type("price", "float")
+
+    # distance: not null, >0, is of type float
+    validator.expect_column_values_to_not_be_null("distance")
+    validator.expect_column_values_to_be_between("distance", min_value=0, max_value=None, strict_min=True)
+    validator.expect_column_values_to_be_of_type("distance", "float")
+
+    # datetime: not null, format, min value
+    validator.expect_column_values_to_not_be_null("datetime")
+    validator.expect_column_values_to_match_strftime_format("datetime", "%Y-%m-%d %H:%M:%S")
+    validator.expect_column_values_to_be_between("datetime", min_value="2018-11-26 00:00:00", max_value=None)
+
+    # hour: not null, 0 to 24, is of type int
+    validator.expect_column_values_to_not_be_null("hour")
+    validator.expect_column_values_to_be_between("hour", 0, 24)
+    validator.expect_column_values_to_be_of_type("hour", "int")
+
+    # day: not null, 1 to 31, is of type int
+    validator.expect_column_values_to_not_be_null("day")
+    validator.expect_column_values_to_be_between("day", 1, 31)
+    validator.expect_column_values_to_be_of_type("day", "int")
+
+    # month: not null, 1 to 12, is of type int
+    validator.expect_column_values_to_not_be_null("month")
+    validator.expect_column_values_to_be_between("month", 1, 12)
+    validator.expect_column_values_to_be_of_type("month", "int")
+
+    # cab_type: not null, in set of values {Lyft, Uber}
+    validator.expect_column_values_to_be_in_set("cab_type", {"Lyft", "Uber"})
+    validator.expect_column_values_to_not_be_null("cab_type")
+
+    results = validator.validate()
+
+    if not results.success:
+        failed_expectations = [
+            (result.expectation_config.expectation_type, result.result)
+            for result in results.results
+            if not result.success
+        ]
+        raise Exception(f"Data validation failed: {failed_expectations}")
+
+    print("All data validations passed.")
+
+

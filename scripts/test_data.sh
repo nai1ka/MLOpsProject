@@ -17,7 +17,8 @@ with initialize(config_path=\"../configs\", version_base=None):
 "
 echo "Data sample taken"
 
- Step 2: Validate the data sample
+
+# Step 2: Validate the data sample
 echo "Validating the data sample..."
 python -c "
 from data import validate_initial_data
@@ -33,7 +34,7 @@ echo "Data sample validated"
 # Step 3: Version the data sample using DVC
 echo "Versioning the data sample..."
 dvc add ../data/samples/sample.csv
-git add ../data/samples/sample.csv.dvc ../.gitignore
+git add ../data/samples/sample.csv.dvc
 git commit -m "Add and version data sample"
 dvc push
 echo "Data sample versioned"
