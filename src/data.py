@@ -17,7 +17,6 @@ def sample_data(cfg: DictConfig = None):
     sample_df = df[0:sample_size]
     sample_df.to_csv("../data/samples/"+output_name, index=False)
 
-
 from great_expectations.data_context import FileDataContext
 
 def validate_initial_data():
