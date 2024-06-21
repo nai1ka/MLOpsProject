@@ -103,9 +103,6 @@ fluent_datasources:
       csv_file:
         type: csv
         filepath_or_buffer: ../data/samples/sample.csv
-      pandas_dataframe:
-        type: dataframe
-        batch_metadata: {}
 notebooks:
 include_rendered_content:
   globally: false

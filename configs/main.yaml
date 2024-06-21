@@ -1,9 +1,4 @@
-db:
-  driver: mysql
-  user: james
-  password: secret
-
 data:
   sample_size: 0.2
   dataset_name: rideshare_kaggle.csv
-  url: brllrb/uber-and-lyft-dataset-boston-ma
+  output_name: sample.csv
