@@ -2,6 +2,9 @@ hydra-core
 dvc
 pytest
 great_expectations
-kaggle
 pandas
 scikit-learn
+seaborn
+matplotlib
+jupyter
+numpy
