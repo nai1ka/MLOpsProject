@@ -37,6 +37,7 @@ dvc add ../data/samples/sample.csv
 git add ../data/samples/sample.csv.dvc
 git commit -m "Add and version data sample"
 dvc push
+git push
 echo "Data sample versioned"
 
 echo "Process completed successfully"
