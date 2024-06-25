@@ -1,2 +1,10 @@
 hydra-core
 dvc
+pytest
+great_expectations
+pandas
+scikit-learn
+seaborn
+matplotlib
+jupyter
+numpy
