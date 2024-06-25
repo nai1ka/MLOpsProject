@@ -6,7 +6,7 @@ from src.data import sample_data
 
 
 @pytest.fixture(scope="module")
-def cfg():
+def config():
     """Load the configuration file for the tests"""
     with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
