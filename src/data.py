@@ -1,10 +1,12 @@
 import hydra
 from omegaconf import DictConfig
 import pandas as pd
+from great_expectations.data_context import FileDataContext
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="main")
 def sample_data(cfg: DictConfig = None):
+    """Create a sample of the dataset"""
     dataset_name = cfg.data.dataset_name
     output_name = cfg.data.output_name
 
@@ -21,10 +23,8 @@ def sample_data(cfg: DictConfig = None):
     sample_df.to_csv("../data/samples/" + output_name, index=False)
 
 
-from great_expectations.data_context import FileDataContext
-
-
 def validate_initial_data():
+    """Validate the initial data using Great Expectations"""
     # Create a data context
     context = FileDataContext(context_root_dir="../services/gx")
 
@@ -55,7 +55,6 @@ def validate_initial_data():
                                                   r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
 
     # price: not null, >0, is of type float
-
     validator.expect_column_values_to_be_between("price", min_value=0, max_value=None, strict_min=True)
     validator.expect_column_values_to_be_of_type("price", "float")
 
@@ -96,8 +95,6 @@ def validate_initial_data():
             for result in results.results
             if not result.success
         ]
-        raise Exception(f"Data validation failed: {failed_expectations}")
+        raise AssertionError(f"Data validation failed: {failed_expectations}")
 
     print("All data validations passed.")
-
-
