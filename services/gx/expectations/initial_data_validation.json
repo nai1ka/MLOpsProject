@@ -1,9 +1,189 @@
 {
   "data_asset_type": null,
   "expectation_suite_name": "initial_data_validation",
-  "expectations": [],
+  "expectations": [
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "id"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "id"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_match_regex",
+      "kwargs": {
+        "column": "id",
+        "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "price",
+        "max_value": null,
+        "min_value": 0,
+        "strict_min": true
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "price",
+        "type_": "float"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "distance"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "distance",
+        "max_value": null,
+        "min_value": 0,
+        "strict_min": true
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "distance",
+        "type_": "float"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "datetime"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_match_strftime_format",
+      "kwargs": {
+        "column": "datetime",
+        "strftime_format": "%Y-%m-%d %H:%M:%S"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "datetime",
+        "max_value": null,
+        "min_value": "2018-11-26 00:00:00"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "hour"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "hour",
+        "max_value": 24,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "hour",
+        "type_": "int"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "day"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "day",
+        "max_value": 31,
+        "min_value": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "day",
+        "type_": "int"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "month"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "month",
+        "max_value": 12,
+        "min_value": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_of_type",
+      "kwargs": {
+        "column": "month",
+        "type_": "int"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "cab_type",
+        "value_set": [
+          "Uber",
+          "Lyft"
+        ]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "cab_type"
+      },
+      "meta": {}
+    }
+  ],
   "ge_cloud_id": null,
   "meta": {
-    "great_expectations_version": "0.18.16"
+    "great_expectations_version": "0.18.17"
   }
 }

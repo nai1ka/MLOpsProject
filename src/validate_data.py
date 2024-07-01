@@ -6,7 +6,7 @@ import sys
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="main")
-def validate_initial_data():
+def validate_initial_data(cfg: DictConfig = None):
     """Validate the initial data using Great Expectations"""
     context = FileDataContext(context_root_dir="../services/gx")
 
