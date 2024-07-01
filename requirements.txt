@@ -8,3 +8,6 @@ seaborn
 matplotlib
 jupyter
 numpy
+zenml[server]
+apache-airflow
+shyaml
