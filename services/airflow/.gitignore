@@ -1,0 +1,7 @@
+airflow-schedurer.err
+airflow-schedurer.out
+airflow-schedurer.pid
+airflow-webserver-monitor.pid
+airflow-webserver.ogiut
+airflow-webserver.err
+airflow.db
