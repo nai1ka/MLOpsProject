@@ -23,6 +23,7 @@ def sample_data(cfg: DictConfig = None):
 
     # Save the sample
     sample_df.to_csv("../data/samples/" + output_name, index=False)
+    return df, sample_version
 
 
 if __name__ == "__main__":

@@ -100,7 +100,7 @@ fluent_datasources:
   pandas_datasource:
     type: pandas
     assets:
-      csv_file:
+      sample_csv:
         type: csv
         filepath_or_buffer: ../data/samples/sample.csv
 notebooks:
