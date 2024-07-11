@@ -10,6 +10,11 @@ jupyter
 numpy
 zenml[server]
 apache-airflow==2.7.3
+apache-airflow-providers-common-sql==1.14.0
+apache-airflow-providers-ftp==3.9.1
+apache-airflow-providers-http==4.11.1
+apache-airflow-providers-imap==3.6.1
+apache-airflow-providers-sqlite==3.8.1
 feast==0.35.0
 mlflow==2.14.1
 evidently==0.4.23
