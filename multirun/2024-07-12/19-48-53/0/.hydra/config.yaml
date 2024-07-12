@@ -1,0 +1,36 @@
+sample_size: 0.2
+dataset_name: rideshare_kaggle.csv
+output_name: sample.csv
+sample_version: 1
+experiment_name: mlops_experiment
+run_name: multi_run
+test_size: 0.2
+random_state: 88
+cv_n_jobs: -1
+train_data_version: v4
+test_data_version: v5
+model:
+  folds: 3
+  evaluation_metric: f1
+  cv_evaluation_metric: mean_test_f1
+  pyfunc_predict_fn: predict_proba
+  metrics:
+    accuracy: accuracy
+    f1: f1
+  model_name: random_forest
+  artifact_path: basic_rf
+  tag_key: model
+  tag_value: basic RF
+  module_name: sklearn.ensemble
+  class_name: RandomForestClassifier
+  params:
+    n_estimators:
+    - 100
+    - 200
+    - 500
+    criterion:
+    - gini
+    - entropy
+    - log_loss
+    random_state:
+    - 88

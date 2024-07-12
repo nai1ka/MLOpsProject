@@ -121,6 +121,14 @@ def transform_data(df, version, return_df = False, config_path="../configs", con
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     context = FileDataContext(context_root_dir="../services/gx")
     suite_name = "data_validation"
+    features = ['hour','month', 'source', 'destination', 'name', 'distance',
+       'surge_multiplier', 'latitude', 'longitude', 'apparentTemperature',
+       'short_summary', 'precipIntensity', 'precipProbability', 'humidity',
+       'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
+       'uvIndex', 'precipIntensityMax', 'day_of_week']
+    
+    
+
     context.add_or_update_expectation_suite(suite_name)
 
     # Load the expectation suite
@@ -146,6 +154,32 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.Dat
     )
 
     validator.expect_column_values_to_be_between("hour", min_value=0, max_value=24)
+    validator.expect_column_values_to_be_between("month", min_value=1, max_value=12)
+
+    validator.expect_column_values_to_be_between("precipIntensity", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("precipProbability", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("humidity", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("visibility", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("cloudCover", min_value=0, max_value=1)
+    # TODO: check add day of week after transform
+    # validator.expect_column_values_to_be_between("day_of_week", min_value=0, max_value=7)
+    validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+
+    positive_features = ["distance", "apparentTemperature", "pressure", "windSpeed", "visibility", "windBearing", "uvIndex", "surge_multiplier"]
+    for feature in positive_features:
+        print(feature)
+        validator.expect_column_values_to_be_between(feature, min_value=0, max_value=None)
+    
+    not_categorical_columns = ['hour','month', 'distance',
+       'surge_multiplier', 'apparentTemperature', 'precipIntensity', 'precipProbability', 'humidity',
+       'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
+       'uvIndex', 'precipIntensityMax', 'day_of_week']
+    encoded_features = [feature for feature in X.columns if feature not in not_categorical_columns]
+
+    for categorical_features in encoded_features:
+        
+        validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+    
 
     validator.save_expectation_suite(discard_failed_expectations=False)
 
@@ -164,6 +198,9 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.Dat
     return (X, y)
 
 def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
+    # Example: Save the processed features
+    X.reset_index(drop=True, inplace=True)
+    y.reset_index(drop=True, inplace=True)
     df = pd.concat([X, y], axis=1)
     zenml.save_artifact(data=df, name="features_target", tags=[version])
 

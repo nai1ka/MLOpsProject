@@ -1,0 +1,6 @@
+artifact_location: file:///home/nai1ka/MLOpsProject/src/mlruns/740899195610916956
+creation_time: 1720815029460
+experiment_id: '740899195610916956'
+last_update_time: 1720815029460
+lifecycle_stage: active
+name: linear_regression_mlops_experiment
