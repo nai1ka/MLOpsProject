@@ -34,10 +34,19 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     X = df.drop(columns=['price'])
     y = pd.DataFrame(df['price'])
     return X, y
+    
 
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     context = FileDataContext(context_root_dir="../services/gx")
     suite_name = "data_validation"
+    features = ['hour','month', 'source', 'destination', 'name', 'distance',
+       'surge_multiplier', 'latitude', 'longitude', 'apparentTemperature',
+       'short_summary', 'precipIntensity', 'precipProbability', 'humidity',
+       'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
+       'uvIndex', 'precipIntensityMax', 'day_of_week']
+    
+    
+
     context.add_or_update_expectation_suite(suite_name)
 
     # Load the expectation suite
@@ -63,6 +72,32 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.Dat
     )
 
     validator.expect_column_values_to_be_between("hour", min_value=0, max_value=24)
+    validator.expect_column_values_to_be_between("month", min_value=1, max_value=12)
+
+    validator.expect_column_values_to_be_between("precipIntensity", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("precipProbability", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("humidity", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("visibility", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between("cloudCover", min_value=0, max_value=1)
+    # TODO: check add day of week after transform
+    # validator.expect_column_values_to_be_between("day_of_week", min_value=0, max_value=7)
+    validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+
+    positive_features = ["distance", "apparentTemperature", "pressure", "windSpeed", "visibility", "windBearing", "uvIndex", "surge_multiplier"]
+    for feature in positive_features:
+        print(feature)
+        validator.expect_column_values_to_be_between(feature, min_value=0, max_value=None)
+    
+    not_categorical_columns = ['hour','month', 'distance',
+       'surge_multiplier', 'apparentTemperature', 'precipIntensity', 'precipProbability', 'humidity',
+       'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
+       'uvIndex', 'precipIntensityMax', 'day_of_week']
+    encoded_features = [feature for feature in X.columns if feature not in not_categorical_columns]
+
+    for categorical_features in encoded_features:
+        
+        validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+    
 
     validator.save_expectation_suite(discard_failed_expectations=False)
 
@@ -87,88 +122,3 @@ def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
 
 def load_artifact(name: str, version: str) -> pd.DataFrame:
     return zenml.load_artifact(name, version)
-
-def transform_data(df, version, return_df = False):
-    target_name = cfg.data.target_name
-    X_cols = [col for col in df.columns]
-    X = df.drop(columns=['price'])
-    y = df[target_name]
-
-    categorical_features = list(cfg.data.cat_cols)
-    #binary_features = list(cfg.data.bin_cols)
-    numerical_features = list(cfg.data.num_cols)
-    dt_features = list(sum(cfg.data.dt_cols.values(), []))
-
-    # Define the preprocessing transformers
-    categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore'))
-    ])
-
-    binary_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore'))
-    ])
-
-    numerical_transformer = Pipeline(steps=[
-        ('scaler', StandardScaler())
-    ])
-
-    # Define the cyclical feature transformers
-    def sin_transformer(period):
-        return FunctionTransformer(lambda x: np.sin(x.astype(float) / period * 2 * np.pi))
-
-    def cos_transformer(period):
-        return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
-
-        
-dt_transformer = ColumnTransformer(transformers=[
-        ('day_sin', sin_transformer(31), list(cfg.data.dt_cols['day'])),
-        ('day_cos', cos_transformer(31), list(cfg.data.dt_cols['day'])),
-        ('month_sin', sin_transformer(12),  list(cfg.data.dt_cols['month'])),
-        ('month_cos', cos_transformer(12),  list(cfg.data.dt_cols['month']))
-    ])
-    
-    # Combine the preprocessing transformers
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numerical_transformer, numerical_features),
-            ('cat', categorical_transformer, categorical_features),
-            ('bin', binary_transformer, binary_features),
-            ('dt', dt_transformer, dt_features)
-        ],
-        remainder="drop", # Drop all other features which did not pass through any feature transformer
-        n_jobs = 4 # parallelism
-    )
-
-    print(numerical_features, categorical_features, binary_features, dt_features, labels)
-
-    pipe = make_pipeline(preprocessor)
-
-     # This will draw a diagram if you run it in a Jupyter notebook.
-    from sklearn import set_config
-    set_config(display="diagram")
-    print(pipe)
-    
-    # Fit input data X
-    X_model = pipe.fit(X)
-
-    # Transform input data X
-    X_preprocessed = X_model.transform(X)
-
-    save_artifact(data = X_model, name = "X_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
-    save_artifact(data = y_model, name = "y_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
-
-    # X_preprocessed
-    X = pd.DataFrame(X_preprocessed)
-    y = pd.DataFrame(y_encoded) # type: ignore
-
-    # Do not forget to make columns of string type
-    X.columns = X.columns.astype(str)
-    y.columns = y.columns.astype(str)
-
-    if return_df:
-        df = pd.concat([X, y], axis = 1)
-        return df
-    else:
-        return X, y
