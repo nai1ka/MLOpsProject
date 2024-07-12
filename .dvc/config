@@ -1,4 +1,4 @@
 [core]
     remote = localstore
 ['remote "localstore"']
-    url = /home/nai1ka/MLOpsProject/datastore
+    url = $PROJECTPATH/datastore
