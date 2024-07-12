@@ -87,3 +87,88 @@ def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
 
 def load_artifact(name: str, version: str) -> pd.DataFrame:
     return zenml.load_artifact(name, version)
+
+def transform_data(df, version, return_df = False):
+    target_name = cfg.data.target_name
+    X_cols = [col for col in df.columns]
+    X = df.drop(columns=['price'])
+    y = df[target_name]
+
+    categorical_features = list(cfg.data.cat_cols)
+    #binary_features = list(cfg.data.bin_cols)
+    numerical_features = list(cfg.data.num_cols)
+    dt_features = list(sum(cfg.data.dt_cols.values(), []))
+
+    # Define the preprocessing transformers
+    categorical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
+
+    binary_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
+
+    numerical_transformer = Pipeline(steps=[
+        ('scaler', StandardScaler())
+    ])
+
+    # Define the cyclical feature transformers
+    def sin_transformer(period):
+        return FunctionTransformer(lambda x: np.sin(x.astype(float) / period * 2 * np.pi))
+
+    def cos_transformer(period):
+        return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
+
+        
+dt_transformer = ColumnTransformer(transformers=[
+        ('day_sin', sin_transformer(31), list(cfg.data.dt_cols['day'])),
+        ('day_cos', cos_transformer(31), list(cfg.data.dt_cols['day'])),
+        ('month_sin', sin_transformer(12),  list(cfg.data.dt_cols['month'])),
+        ('month_cos', cos_transformer(12),  list(cfg.data.dt_cols['month']))
+    ])
+    
+    # Combine the preprocessing transformers
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', numerical_transformer, numerical_features),
+            ('cat', categorical_transformer, categorical_features),
+            ('bin', binary_transformer, binary_features),
+            ('dt', dt_transformer, dt_features)
+        ],
+        remainder="drop", # Drop all other features which did not pass through any feature transformer
+        n_jobs = 4 # parallelism
+    )
+
+    print(numerical_features, categorical_features, binary_features, dt_features, labels)
+
+    pipe = make_pipeline(preprocessor)
+
+     # This will draw a diagram if you run it in a Jupyter notebook.
+    from sklearn import set_config
+    set_config(display="diagram")
+    print(pipe)
+    
+    # Fit input data X
+    X_model = pipe.fit(X)
+
+    # Transform input data X
+    X_preprocessed = X_model.transform(X)
+
+    save_artifact(data = X_model, name = "X_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
+    save_artifact(data = y_model, name = "y_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
+
+    # X_preprocessed
+    X = pd.DataFrame(X_preprocessed)
+    y = pd.DataFrame(y_encoded) # type: ignore
+
+    # Do not forget to make columns of string type
+    X.columns = X.columns.astype(str)
+    y.columns = y.columns.astype(str)
+
+    if return_df:
+        df = pd.concat([X, y], axis = 1)
+        return df
+    else:
+        return X, y
