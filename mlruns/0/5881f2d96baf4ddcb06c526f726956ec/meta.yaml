@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/5881f2d96baf4ddcb06c526f726956ec/artifacts
+end_time: 1720814211839
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5881f2d96baf4ddcb06c526f726956ec
+run_name: nebulous-zebra-297
+run_uuid: 5881f2d96baf4ddcb06c526f726956ec
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720814211825
+status: 3
+tags: []
+user_id: nai1ka

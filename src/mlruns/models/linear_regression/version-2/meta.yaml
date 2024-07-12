@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1720815033241
+current_stage: None
+description: null
+last_updated_timestamp: 1720815033241
+name: linear_regression
+run_id: 7615532a3b83453eb4877ccd7a30207c
+run_link: null
+source: file:///home/nai1ka/MLOpsProject/src/mlruns/740899195610916956/7615532a3b83453eb4877ccd7a30207c/artifacts/basic_lr
+status: READY
+status_message: null
+storage_location: file:///home/nai1ka/MLOpsProject/src/mlruns/740899195610916956/7615532a3b83453eb4877ccd7a30207c/artifacts/basic_lr
+user_id: null
+version: 2

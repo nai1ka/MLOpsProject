@@ -1,0 +1,15 @@
+artifact_uri: file:///home/nai1ka/MLOpsProject/src/mlruns/397609786619295046/101edef33dcc44f39a8c6d24d0629156/artifacts
+end_time: 1720815016917
+entry_point_name: ''
+experiment_id: '397609786619295046'
+lifecycle_stage: active
+run_id: 101edef33dcc44f39a8c6d24d0629156
+run_name: child_multi_run_random_forest_f1_nan_4
+run_uuid: 101edef33dcc44f39a8c6d24d0629156
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720815014019
+status: 3
+tags: []
+user_id: nai1ka

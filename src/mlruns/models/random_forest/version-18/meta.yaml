@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1720815023674
+current_stage: None
+description: null
+last_updated_timestamp: 1720815023674
+name: random_forest
+run_id: 0c4280ad31984d8f822a32da3f57f032
+run_link: null
+source: file:///home/nai1ka/MLOpsProject/src/mlruns/397609786619295046/0c4280ad31984d8f822a32da3f57f032/artifacts/basic_rf
+status: READY
+status_message: null
+storage_location: file:///home/nai1ka/MLOpsProject/src/mlruns/397609786619295046/0c4280ad31984d8f822a32da3f57f032/artifacts/basic_rf
+user_id: null
+version: 18

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/nai1ka/MLOpsProject/src/mlruns/0/a83203621cf141babb8cfff9ffb8db93/artifacts
+end_time: 1720815001267
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a83203621cf141babb8cfff9ffb8db93
+run_name: aged-newt-346
+run_uuid: a83203621cf141babb8cfff9ffb8db93
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720815001260
+status: 3
+tags: []
+user_id: nai1ka

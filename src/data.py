@@ -7,7 +7,8 @@ from great_expectations.checkpoint import Checkpoint
 from great_expectations.data_context import FileDataContext
 from hydra import compose, initialize
 from omegaconf import OmegaConf
-
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler
 import sample_data
 
 
@@ -30,9 +31,71 @@ def extract_data(base_path: str) -> (pd.DataFrame, str):
     return df, version
 
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
-    # Your data preprocessing code
+    # Remove visibility1 column as a duplicate.
+    df = df.drop(['visibility.1'], axis = 1)
+
+    # Missing values in the target variable are randomly distributed, imputing them might introduce noise or bias. Therefore, we remove missing values in the target variable.
+    df = df.dropna(subset=['price'])
+
+    # Price of the ride is not affected by id, because it just uniquely identifies the rides. Therefore it can be deleted.
+    df = df.drop(['id'], axis = 1)
+    
+    # Icon is just an image representation of the weather, so it can be deleted (the weather itself will be counted in other features).
+    df = df.drop(['icon'], axis = 1)
+
+    # Timezone feature has only 1 value as it should be, because the goal of the project is to only predict cab prices in Boston, so this column is also useless.
+    df = df.drop(['timezone'], axis = 1)
+
+    # Instead of using datetime and timestamp, we will use month, day_of_week, and hour.
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['day_of_week'] = df['datetime'].dt.dayofweek
+    df = df.drop(['datetime', 'day', 'timestamp'], axis = 1)
+
+    # All the temperature features are very highly correlated, so we will leave apparentTemperature because it has an average correlation with all other temperature features and often has a more direct impact on human comfort and behavior, which can influence cab prices.
+    df = df.drop(['temperature', 'temperatureHigh', 'temperatureLow', 'apparentTemperatureHigh', 'apparentTemperatureLow', 'temperatureMin', 'temperatureMax', 'apparentTemperatureMin', 'apparentTemperatureMax'], axis = 1)
+    
+    # Since we are solving the problem for our own cab company, we do not need the cab_type column, which includes df about other cab companies.
+    df = df.drop(['cab_type'], axis = 1)
+
+    # Short summary column is brief version of long summary one. Therefore it is a duplicate and we should remove it.
+    df = df.drop(['long_summary'], axis = 1)
+
+    # Since the time of all measurements is very close to the time of travel, we can delete the features related to time of measurements.
+    df = df.drop(['windGustTime', 'temperatureHighTime', 'temperatureLowTime', 'apparentTemperatureHighTime', 'apparentTemperatureLowTime', 'sunriseTime', 'sunsetTime', 'uvIndexTime', 'temperatureMinTime', 'temperatureMaxTime', 'apparentTemperatureMinTime', 'apparentTemperatureMaxTime'], axis = 1)
+
+    # The price of the ride is not influenced by the moon phase, therefore it is reasonable to delete it.
+    df = df.drop(['moonPhase'], axis = 1)
+
+    # The ozone level also is not relevant feature for the price prediction.
+    df = df.drop(['ozone'], axis = 1)
+
+    # The dewPoint and windGust are not relevant feature for the price prediction.
+    df = df.drop(['dewPoint', 'windGust'], axis = 1)
+
+    # The product id represent the same information as name column: category of the auto (product). Therefore, we delete product_id, because name column has human-friendly names.
+    df = df.drop(['product_id'], axis = 1)
+
     X = df.drop(columns=['price'])
     y = pd.DataFrame(df['price'])
+
+    # Encode categorical features using onehot encoder.
+    def encode_features_one_hot(dataframe, features_names, encoder):
+        new_features = encoder.transform(dataframe[features_names])
+        new_columns_df = pd.DataFrame(new_features, columns=encoder.get_feature_names_out(features_names))
+        new_dataframe = pd.concat([dataframe.reset_index(drop=True), new_columns_df.reset_index(drop=True)], axis=1)
+        new_dataframe.drop(features_names, axis=1, inplace=True)
+        return new_dataframe
+
+    features_names_to_encode = list(X.select_dtypes(exclude='number').columns)
+    encoder = OneHotEncoder(sparse_output=False)
+    encoder.fit(X[features_names_to_encode])
+    X = encode_features_one_hot(X, features_names_to_encode, encoder)
+
+    # Scaling data using MinMaxScaler
+    scaler = MinMaxScaler()
+    scaler.fit(X)
+    X = pd.DataFrame(scaler.transform(X), columns = X.columns)
+
     return X, y
     
 
@@ -117,6 +180,8 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.Dat
 
 def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
     # Example: Save the processed features
+    X.reset_index(drop=True, inplace=True)
+    y.reset_index(drop=True, inplace=True)
     df = pd.concat([X, y], axis=1)
     zenml.save_artifact(data=df, name="features_target", tags=[version])
 

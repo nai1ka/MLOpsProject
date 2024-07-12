@@ -1,0 +1,15 @@
+artifact_uri: file:///home/nai1ka/MLOpsProject/src/mlruns/740899195610916956/3fa2f1edfbaf4caba13eb93c9f3ef2f4/artifacts
+end_time: 1720815035355
+entry_point_name: ''
+experiment_id: '740899195610916956'
+lifecycle_stage: active
+run_id: 3fa2f1edfbaf4caba13eb93c9f3ef2f4
+run_name: child_multi_run_linear_regression_f1_nan_1
+run_uuid: 3fa2f1edfbaf4caba13eb93c9f3ef2f4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720815033270
+status: 3
+tags: []
+user_id: nai1ka
