@@ -15,7 +15,7 @@ from zenml.integrations.sklearn.materializers.sklearn_materializer import Sklear
 
 import sample_data
 
-BASE_PATH = os.path.expandvars("$PROJECT_PATH")
+BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 def read_datastore() -> pd.DataFrame:
     path = os.path.join(BASE_PATH, 'data/samples', 'sample.csv')

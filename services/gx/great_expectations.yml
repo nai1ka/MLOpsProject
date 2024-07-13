@@ -102,7 +102,10 @@ fluent_datasources:
     assets:
       sample_csv:
         type: csv
-        filepath_or_buffer: ../data/samples/sample.csv
+        filepath_or_buffer: data/samples/sample.csv
+      sample_data:
+        type: dataframe
+        batch_metadata: {}
 notebooks:
 include_rendered_content:
   globally: false
