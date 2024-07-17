@@ -2,12 +2,11 @@ defaults:
   - _self_
 
 folds: 3
-
-evaluation_metric: "f1"
-cv_evaluation_metric: "mean_test_f1"
-
-pyfunc_predict_fn: "predict_proba"
+evaluation_metric: "neg_mean_squared_error"
+cv_evaluation_metric: "mean_test_score"
+pyfunc_predict_fn: "predict"
 
 metrics:
-  accuracy: "accuracy"
-  f1: "f1"
+  r2: "r2"
+  mse: "neg_mean_squared_error"
+  mae: "neg_mean_absolute_error"

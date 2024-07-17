@@ -1,0 +1,13 @@
+model_name: xgb_regressor
+artifact_path: basic_xgbr
+
+tag_key: "model"
+tag_value: "basic XGBRegressor"
+
+module_name: "xgboost.sklearn"
+class_name: "XGBRegressor"
+
+params:
+  n_estimators: [100, 200, 500]
+  learning_rate: [0.01, 0.1, 0.3]
+  max_depth: [3, 5, 10]
