@@ -214,12 +214,8 @@ def extract_features(name, version, size=1):
     df = latest_artifact.load()
     df = df.sample(frac=size, random_state=88)
 
-    print("size of df is ", df.shape)
-
     X = df.drop('price', axis=1)
     y = df.price
-
-    print("shapes of X,y = ", X.shape, y.shape)
 
     return X, y
 

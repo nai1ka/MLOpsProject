@@ -11,10 +11,6 @@ import random
 import numpy as np
 
 def train(X_train, y_train, cfg):
-    np.random.seed(cfg.random_state)
-    random.seed(cfg.random_state)
-    sklearn.utils.check_random_state(cfg.random_state)
-
     params = cfg.model.params
     module_name = cfg.model.module_name  # e.g. "sklearn.ensemble"
     class_name = cfg.model.class_name  # e.g. "RandomForestRegressor"

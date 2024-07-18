@@ -9,4 +9,4 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      +model: "rf, lr"
+      +model: "rf, xgbr"
