@@ -3,6 +3,7 @@ import numpy as np
 import os
 import yaml
 import zenml
+from zenml.client import Client
 from great_expectations import DataContext
 from great_expectations.checkpoint import Checkpoint
 from great_expectations.data_context import FileDataContext
@@ -203,6 +204,24 @@ def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
     y.reset_index(drop=True, inplace=True)
     df = pd.concat([X, y], axis=1)
     zenml.save_artifact(data=df, name="features_target", tags=[version])
+
+
+def extract_features(name, version, size = 1):
+    client = Client()
+    l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
+    latest_artifact = sorted(l, key=lambda x: x.created)[-1]
+    df = latest_artifact.load()
+    df = df.sample(frac = size, random_state = 88)
+
+    print("size of df is ", df.shape)
+    print("df columns: ", df.columns)
+
+    X = df.drop('price', axis=1)
+    y = df.price
+
+    print("shapes of X,y = ", X.shape, y.shape)
+
+    return X, y
 
 # def load_artifact(name: str, version: str) -> pd.DataFrame:
     # return zenml.load_artifact(name, version)

@@ -9,15 +9,13 @@ tag_value: "basic RF"
 module_name: "sklearn.ensemble"
 class_name: "RandomForestRegressor"
 
+# params:
+#   n_estimators: [100, 200, 500]
+#   criterion: ['squared_error', 'absolute_error', 'poisson']
+#   random_state: [88] #, 100, 44]
+
+
 params:
-  n_estimators: [100, 200, 500]
-  criterion: ['squared_error', 'absolute_error', 'poisson']
+  n_estimators: [100]
+  criterion: ['squared_error']
   random_state: [88] #, 100, 44]
-
-
-# hydra:
-#   sweeper:
-#       params:
-#         +params.n_estimators: "100, 200, 500"
-#         +params.criterion: "'gini', 'entropy', 'log_loss'"
-#         +params.random_state: 88

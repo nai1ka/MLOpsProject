@@ -1,18 +1,20 @@
 import hydra
-from model import train, load_features, log_metadata
+from model import train, log_metadata
+from data import extract_features
 from omegaconf import OmegaConf
-
+from sklearn.model_selection import train_test_split
 
 def run(cfg):
     train_data_version = cfg.train_data_version
 
-    X_train, y_train = load_features(name = "features_target", version=1)
+    X, y = extract_features(name = "features_target", version=train_data_version)
 
-    #test_data_version = cfg.test_data_version
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=cfg.test_size, random_state=cfg.random_state) 
 
-    X_test, y_test = load_features(name = "features_target", version=1)
 
-    # print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    test_data_version = cfg.test_data_version
+
+    X_test, y_test = extract_features(name = "features_target", version=test_data_version)
 
     gs = train(X_train, y_train, cfg=cfg)
 

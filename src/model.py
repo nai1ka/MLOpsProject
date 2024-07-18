@@ -1,28 +1,12 @@
 import warnings
 warnings.filterwarnings('ignore')
 from sklearn.model_selection import GridSearchCV
-from zenml.client import Client
+
 import pandas as pd
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 import importlib
-
-def load_features(name, version, size = 1):
-    client = Client()
-    l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
-    latest_artifact = sorted(l, key=lambda x: x.created)[-1]
-    df = latest_artifact.load()
-    df = df.sample(frac = size, random_state = 88)
-
-    print("size of df is ", df.shape)
-    print("df columns: ", df.columns)
-
-    X = df.drop('price', axis=1)
-    y = df.price
-
-    print("shapes of X,y = ", X.shape, y.shape)
-
-    return X, y
 
 def train(X_train, y_train, cfg):
 
@@ -119,6 +103,30 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         # Set a tag that we can use to remind ourselves what this run was for
         mlflow.set_tag(cfg.model.tag_key, cfg.model.tag_value)
 
+        predictions = gs.best_estimator_.predict(X_test)
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_test, predictions)
+        plt.xlabel('Actual Values')
+        plt.ylabel('Predicted Values')
+        plt.title('Actual vs. Predicted Values')
+        plt.grid(True)
+        plt.tight_layout()
+        plt_path = "actual_vs_predicted_plot.png"
+        plt.savefig(plt_path)
+        mlflow.log_artifact(plt_path, artifact_path="plots")
+
+        # plt.figure(figsize=(8, 6))
+        # plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+        # plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
+        # plt.xlabel("Training examples")
+        # plt.ylabel("Score")
+        # plt.title("Learning curves")
+        # plt.legend(loc="best")
+        # plt.tight_layout()
+        # lc_path = "learning_curve.png"
+        # plt.savefig(lc_path)
+       # mlflow.log_artifact(lc_path, artifact_path="plots")
+
         # Infer the model signature
         signature = mlflow.models.infer_signature(X_train, gs.predict(X_train))
 
@@ -199,7 +207,10 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 )
 
                 print(f"metrics:\n{results.metrics}")
+
             
-            # mlflow.end_run()  
+        dst_path = "results"
+        artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
+        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)    # mlflow.end_run()  
     
     # mlflow.end_run()  

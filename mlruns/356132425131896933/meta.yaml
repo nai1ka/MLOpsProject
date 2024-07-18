@@ -1,6 +1,0 @@
-artifact_location: file:///home/nai1ka/MLOpsProject/mlruns/356132425131896933
-creation_time: 1720814112411
-experiment_id: '356132425131896933'
-last_update_time: 1720814112411
-lifecycle_stage: active
-name: random_forest_mlops_experiment
