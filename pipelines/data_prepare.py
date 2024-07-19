@@ -3,6 +3,7 @@ import zenml
 from typing_extensions import Tuple, Annotated
 from zenml import step, pipeline, ArtifactConfig
 import data
+from hydra import compose, initialize
 import os
 
 @step(enable_cache=False)
@@ -16,9 +17,10 @@ def extract() -> Tuple[
     ArtifactConfig(name="data_version",
                    tags=["data_preparation"])]
 ]:
-    df, version = data.extract_data()
-
-    return df, version
+     with initialize(config_path="../configs", version_base=None):
+        config = compose(config_name="main")
+        df = data.extract_data()
+        return df, config.sample_version
 
 
 @step(enable_cache=False)
@@ -30,8 +32,11 @@ def transform(df: pd.DataFrame, version: str) -> Tuple[
     ArtifactConfig(name="input_target",
                    tags=["data_preparation"])]
 ]:
-    X, y = data.transform_data(df, version)
-    return X, y
+     with initialize(config_path="../configs", version_base=None):
+        config = compose(config_name="main")
+        X, y = data.transform_data(df=df, version=version, cfg=config)
+        return X, y
+   
 
 
 @step(enable_cache=False)
@@ -74,8 +79,8 @@ def prepare_data_pipeline():
 if __name__ == "__main__":
     run = prepare_data_pipeline()
 
-    version = data.get_data_version()
-    print(version)
+    # version = data.get_data_version()
+    # print(version)
     # df = data.load_artifact(name="features_target", version=version)
     # print("Retrieved DataFrame:")
     # print(df.head())

@@ -10,7 +10,7 @@ def sample_data(cfg: DictConfig = None):
     """Create a sample of the dataset"""
     dataset_name = cfg.dataset_name
     output_name = cfg.output_name
-    sample_version = cfg.sample_version
+    sample_version = int(cfg.sample_version[1:])
 
     # Load the dataset
     df = pd.read_csv("../data/" + dataset_name)

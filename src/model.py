@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings('ignore')
 from sklearn.model_selection import GridSearchCV
-
+import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import mlflow
@@ -103,29 +103,51 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         # Set a tag that we can use to remind ourselves what this run was for
         mlflow.set_tag(cfg.model.tag_key, cfg.model.tag_value)
 
-        predictions = gs.best_estimator_.predict(X_test)
-        plt.figure(figsize=(8, 6))
-        plt.scatter(y_test, predictions)
-        plt.xlabel('Actual Values')
-        plt.ylabel('Predicted Values')
-        plt.title('Actual vs. Predicted Values')
-        plt.grid(True)
-        plt.tight_layout()
-        plt_path = "actual_vs_predicted_plot.png"
-        plt.savefig(plt_path)
-        mlflow.log_artifact(plt_path, artifact_path="plots")
+        def save_plot(fig, filename, artifact_path="plots"):
+            plt_path = f"{filename}.png"
+            fig.savefig(plt_path)
+            mlflow.log_artifact(plt_path, artifact_path=artifact_path)
 
-        # plt.figure(figsize=(8, 6))
-        # plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-        # plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
-        # plt.xlabel("Training examples")
-        # plt.ylabel("Score")
-        # plt.title("Learning curves")
-        # plt.legend(loc="best")
+        predictions = gs.best_estimator_.predict(X_test)
+        residuals = y_test - predictions
+
+        # Actual vs Predicted Plot
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.scatter(y_test, predictions)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r', lw=2)
+        ax.set_xlabel('Actual Values')
+        ax.set_ylabel('Predicted Values')
+        ax.set_title('Actual vs Predicted Plot')
+        ax.grid(True)
+        plt.tight_layout()
+        save_plot(fig, "actual_vs_predicted_plot")
+
+        # Residual Histogram
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.histplot(residuals, kde=True, ax=ax)
+        ax.set_xlabel('Residuals')
+        ax.set_title('Residual Histogram')
+        ax.grid(True)
+        plt.tight_layout()
+        save_plot(fig, "residual_histogram")
+
+        # Residuals vs Fitted Values Plot
+        # fig, ax = plt.subplots(figsize=(8, 6))
+        # sns.residplot(x=predictions, y_test=residuals, lowess=True, line_kws={'color': 'red', 'lw': 1}, ax=ax)
+        # ax.set_xlabel('Fitted Values')
+        # ax.set_ylabel('Residuals')
+        # ax.set_title('Residuals vs Fitted Values')
+        # ax.grid(True)
         # plt.tight_layout()
-        # lc_path = "learning_curve.png"
-        # plt.savefig(lc_path)
-       # mlflow.log_artifact(lc_path, artifact_path="plots")
+        # save_plot(fig, "residuals_vs_fitted_values")
+
+        # # Normal Q-Q Plot
+        # fig, ax = plt.subplots(figsize=(8, 6))
+        # qqplot(residuals, line='s', ax=ax)
+        # ax.set_title('Normal Q-Q')
+        # ax.grid(True)
+        # plt.tight_layout()
+        # save_plot(fig, "normal_qq_plot")
 
         # Infer the model signature
         signature = mlflow.models.infer_signature(X_train, gs.predict(X_train))

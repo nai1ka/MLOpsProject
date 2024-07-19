@@ -23,31 +23,28 @@ def read_datastore() -> pd.DataFrame:
     df = pd.read_csv(path)
     return df
 
-def get_data_version(config_path="../configs", config_name="main") -> str:
-    with initialize(config_path=config_path, version_base=None):
-        cfg = compose(config_name=config_name)
-        return str(cfg.sample_version)
+
 
 def extract_data() -> (pd.DataFrame, str):
     df = read_datastore()
-    version = get_data_version()
-    return df, version
+    return df
 
-def transform_data(df, version, return_df = False, config_path="../configs", config_name="data"):
-    with initialize(config_path="../configs", version_base=None):
-        cfg = compose(config_name="data")
-        target_column = cfg.target_column
-        day_of_week_column = cfg.day_of_week_column
-        datetime_column = cfg.datetime_column
-        categorical_features = list(cfg.categorical_columns)
-        numerical_features = list(cfg.numerical_columns)
-        date_features = list(cfg.date_columns)
+def transform_data(df, version,cfg, return_df = False,  only_X = False,config_path="../configs", config_name="data"):
 
-    df = df.dropna(subset=[target_column])
+    target_column = cfg.target_column
+    day_of_week_column = cfg.day_of_week_column
+    datetime_column = cfg.datetime_column
+    categorical_features = list(cfg.categorical_columns)
+    numerical_features = list(cfg.numerical_columns)
+    date_features = list(cfg.date_columns)
+
+    if(not only_X):
+        df = df.dropna(subset=[target_column])
 
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
-    y = df[target_column]
+    if(not only_X):
+        y = df[target_column]
 
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
@@ -92,12 +89,14 @@ def transform_data(df, version, return_df = False, config_path="../configs", con
     X_model = pipe.fit(X)
     X_preprocessed = X_model.transform(X)
 
-    le = LabelEncoder()
-    y_model = le.fit(y.values.ravel())
-    y_encoded = y_model.transform(y.values.ravel())
+    if(not only_X):
+        le = LabelEncoder()
+        y_model = le.fit(y.values.ravel())
+        y_encoded = y_model.transform(y.values.ravel())
 
     save_artifact(data = X_model, name="X_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
-    save_artifact(data = y_model, name="y_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
+    if(not only_X):
+        save_artifact(data = y_model, name="y_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
 
     cat_col_names = X_model.named_steps['columntransformer'].named_transformers_['categorical'].named_steps['onehot'].get_feature_names_out(categorical_features)
     num_col_names = numerical_features
@@ -108,15 +107,106 @@ def transform_data(df, version, return_df = False, config_path="../configs", con
     all_col_names = np.concatenate([num_col_names, cat_col_names, date_col_names])
 
     X_final = pd.DataFrame(X_preprocessed, columns=all_col_names)
-    y_final = pd.DataFrame(y_encoded, columns=[target_column])
+    if(not only_X):
+        y_final = pd.DataFrame(y_encoded, columns=[target_column])
 
     X_final.columns = X_final.columns.astype(str)
-    y_final.columns = y_final.columns.astype(str)
+    if(not only_X):
+        y_final.columns = y_final.columns.astype(str)
+
+    def add_missing_columns(dff, required_columns):
+        for col in required_columns:
+            if col not in dff.columns:
+                dff[col] = 0.0
+        return dff
+
+# TODO to other place
+
+    
+    hardcoded = ['source_Back Bay', 'source_Beacon Hill', 'source_Boston University', 'source_Fenway', 'source_Financial District', 'source_Haymarket Square', 'source_North End', 'source_North Station', 'source_Northeastern University', 'source_South Station', 'source_Theatre District', 'source_West End', 'destination_Back Bay', 'destination_Beacon Hill', 'destination_Boston University', 'destination_Fenway', 'destination_Financial District', 'destination_Haymarket Square', 'destination_North End', 'destination_North Station', 'destination_Northeastern University', 'destination_South Station', 'destination_Theatre District', 'destination_West End', 'name_Black', 'name_Black SUV', 'name_Lux', 'name_Lux Black', 'name_Lux Black XL', 'name_Lyft', 'name_Lyft XL', 'name_Shared', 'name_Taxi', 'name_UberPool', 'name_UberX', 'name_UberXL', 'name_WAV', 'short_summary_ Clear ', 'short_summary_ Drizzle ', 'short_summary_ Foggy ', 'short_summary_ Light Rain ', 'short_summary_ Mostly Cloudy ', 'short_summary_ Overcast ', 'short_summary_ Partly Cloudy ', 'short_summary_ Possible Drizzle ', 'short_summary_ Rain ']
+    
+    X_final = add_missing_columns(X_final, hardcoded)
+    right_order = ["apparentTemperature",
+                    "cloudCover",
+                    "day",
+                    "day_cos",
+                    "day_of_week",
+                    "day_of_week_cos",
+                    "day_of_week_sin",
+                    "day_sin",
+                    "destination_Back Bay",
+                    "destination_Beacon Hill",
+                    "destination_Boston University",
+                    "destination_Fenway",
+                    "destination_Financial District",
+                    "destination_Haymarket Square",
+                    "destination_North End",
+                    "destination_North Station",
+                    "destination_Northeastern University",
+                    "destination_South Station",
+                    "destination_Theatre District",
+                    "destination_West End",
+                    "distance",
+                    "hour",
+                    "hour_cos",
+                    "hour_sin",
+                    "humidity",
+                    "month",
+                    "month_cos",
+                    "month_sin",
+                    "name_Black",
+                    "name_Black SUV",
+                    "name_Lux",
+                    "name_Lux Black",
+                    "name_Lux Black XL",
+                    "name_Lyft",
+                    "name_Lyft XL",
+                    "name_Shared",
+                    "name_Taxi",
+                    "name_UberPool",
+                    "name_UberX",
+                    "name_UberXL",
+                    "name_WAV",
+                    "precipIntensity",
+                    "precipIntensityMax",
+                    "precipProbability",
+                    "pressure",
+                    "short_summary_ Clear ",
+                    "short_summary_ Drizzle ",
+                    "short_summary_ Foggy ",
+                    "short_summary_ Light Rain ",
+                    "short_summary_ Mostly Cloudy ",
+                    "short_summary_ Overcast ",
+                    "short_summary_ Partly Cloudy ",
+                    "short_summary_ Possible Drizzle ",
+                    "short_summary_ Rain ",
+                    "source_Back Bay",
+                    "source_Beacon Hill",
+                    "source_Boston University",
+                    "source_Fenway",
+                    "source_Financial District",
+                    "source_Haymarket Square",
+                    "source_North End",
+                    "source_North Station",
+                    "source_Northeastern University",
+                    "source_South Station",
+                    "source_Theatre District",
+                    "source_West End",
+                    "surge_multiplier",
+                    "uvIndex",
+                    "visibility",
+                    "windBearing",
+                    "windSpeed"]
+
+    X_final = X_final[right_order]
+   
 
     if return_df:
         df = pd.concat([X_final, y_final], axis=1)
         return df
     else:
+        if(only_X):
+            return X_final
         return X_final, y_final
 
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
@@ -168,7 +258,6 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.Dat
 
     positive_features = ["distance", "apparentTemperature", "pressure", "windSpeed", "visibility", "windBearing", "uvIndex", "surge_multiplier"]
     for feature in positive_features:
-        print(feature)
         validator.expect_column_values_to_be_between(feature, min_value=0, max_value=None)
     
     not_categorical_columns = ['hour','month', 'distance',
@@ -204,9 +293,10 @@ def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
     y.reset_index(drop=True, inplace=True)
     df = pd.concat([X, y], axis=1)
     zenml.save_artifact(data=df, name="features_target", tags=[version])
+    print("Version: "+version)
 
 
-def extract_features(name, version, size = 1):
+def extract_features(name, version, size = 1, return_df = False):
     client = Client()
     l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
     latest_artifact = sorted(l, key=lambda x: x.created)[-1]
@@ -215,6 +305,9 @@ def extract_features(name, version, size = 1):
 
     print("size of df is ", df.shape)
     print("df columns: ", df.columns)
+
+    if(return_df):
+        return df
 
     X = df.drop('price', axis=1)
     y = df.price
@@ -226,9 +319,9 @@ def extract_features(name, version, size = 1):
 # def load_artifact(name: str, version: str) -> pd.DataFrame:
     # return zenml.load_artifact(name, version)
 
-if __name__=="__main__":
-    df, version = extract_data()
-    X, y = transform_data(df, version)
-    print(X.head())
-    print(X.info())
-    print(y)
+# if __name__=="__main__":
+#     df, version = extract_data()
+#     X, y = transform_data(df, version)
+#     print(X.head())
+#     print(X.info())
+#     print(y)

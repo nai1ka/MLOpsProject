@@ -11,7 +11,6 @@ def run(cfg):
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=cfg.test_size, random_state=cfg.random_state) 
 
-
     test_data_version = cfg.test_data_version
 
     X_test, y_test = extract_features(name = "features_target", version=test_data_version)
