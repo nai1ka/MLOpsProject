@@ -6,9 +6,16 @@ name: Unit tests
 # Trigger when?
 on: # Event
   push: # this will trigger the workflow/pipeline only if there is push on `main` branch
-    # paths: # the push should be specifically to the folders `src` or `scripts` to trigger this workflow, otherwise, the workflow will not be triggered
-    #   - 'src'
-    #   - 'scripts'
+    branches:
+      - main
+
+    paths: # the push should be specifically to the folders `src` or `scripts` to trigger this workflow, otherwise, the workflow will not be triggered
+      - 'src/**'
+      - 'scripts/**'
+      - 'services/airflow/dags/**'
+      - 'tests/**'
+      - 'configs/**'
+      - '.github/**'
   #  schedule: # Run this workflow on a scheduled manner given the cron expression (This is a second event to trigger the workflow)
   #    - cron: '*/5 * * * *'
 
