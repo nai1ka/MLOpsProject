@@ -29,13 +29,13 @@ jobs:
       - name: Checking out our code
         uses: actions/checkout@v4
 
-      - name: setup python
+      - name: Setup python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11.0'
           cache: 'pip'
     
-      - name: install python packages
+      - name: Install python packages
         run: |
             python3.11 -m pip install --upgrade pip 
             pip3.11 install -r cicd_requirements.txt 
