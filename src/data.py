@@ -11,7 +11,7 @@ from hydra import compose, initialize
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, FunctionTransformer, MinMaxScaler
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.compose import ColumnTransformer
-from zenml import save_artifact
+from zenml import save_artifact, load_artifact
 from zenml.integrations.sklearn.materializers.sklearn_materializer import SklearnMaterializer
 
 import sample_data
@@ -29,7 +29,13 @@ def extract_data() -> (pd.DataFrame, str):
     df = read_datastore()
     return df
 
-def transform_data(df, version,cfg, return_df = False,  only_X = False,config_path="../configs", config_name="data"):
+def get_artifact(name, version):
+    client = Client()
+    l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
+    latest_artifact = sorted(l, key=lambda x: x.created)[-1]
+    return latest_artifact.load()
+
+def transform_data(df, cfg, version = None, return_df = False,  only_X = False, transformer_version = None,only_transform = False,):
 
     target_column = cfg.target_column
     day_of_week_column = cfg.day_of_week_column
@@ -37,6 +43,15 @@ def transform_data(df, version,cfg, return_df = False,  only_X = False,config_pa
     categorical_features = list(cfg.categorical_columns)
     numerical_features = list(cfg.numerical_columns)
     date_features = list(cfg.date_columns)
+    cyclical_features = {
+        'hour': 24,
+        'day_of_week': 7,
+        'day': 31,
+        'month': 12
+    }
+
+    if version is None:
+        version = "v1"
 
     if(not only_X):
         df = df.dropna(subset=[target_column])
@@ -48,55 +63,62 @@ def transform_data(df, version,cfg, return_df = False,  only_X = False,config_pa
 
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
-    categorical_transformer = Pipeline(steps=[
-        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    ])
+    if(only_transform):
+        if transformer_version is None:
+            transformer_version = version
+        X_model = get_artifact("X_transform_pipeline", version = transformer_version)
+        if not only_X:
+            y_model = get_artifact("y_transform_pipeline", version = transformer_version)
 
-    numerical_transformer = Pipeline(steps=[
-        ('scaler', MinMaxScaler())
-    ])
+        X_preprocessed = X_model.transform(X)
+        if not only_X:
+            y_encoded = y_model.transform(y)
+    else:
 
-    def sin_transformer(period):
-        return FunctionTransformer(lambda x: np.sin(x.astype(float) / period * 2 * np.pi))
+        categorical_transformer = Pipeline(steps=[
+            ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+        ])
 
-    def cos_transformer(period):
-        return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
+        numerical_transformer = Pipeline(steps=[
+            ('scaler', MinMaxScaler())
+        ])
 
-    cyclical_features = {
-        'hour': 24,
-        'day_of_week': 7,
-        'day': 31,
-        'month': 12
-    }
-    dt_transformers = []
-    for feature, period in cyclical_features.items():
-        dt_transformers.append((f'{feature}_sin', sin_transformer(period), [feature]))
-        dt_transformers.append((f'{feature}_cos', cos_transformer(period), [feature]))
-    date_transformer = ColumnTransformer(transformers=dt_transformers)
+        def sin_transformer(period):
+            return FunctionTransformer(lambda x: np.sin(x.astype(float) / period * 2 * np.pi))
 
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('numerical', numerical_transformer, numerical_features),
-            ('categorical', categorical_transformer, categorical_features),
-            ('date', date_transformer, date_features)
-        ],
-        remainder="drop",
-        n_jobs = 4
-    )
+        def cos_transformer(period):
+            return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
 
-    pipe = make_pipeline(preprocessor)
+       
+        dt_transformers = []
+        for feature, period in cyclical_features.items():
+            dt_transformers.append((f'{feature}_sin', sin_transformer(period), [feature]))
+            dt_transformers.append((f'{feature}_cos', cos_transformer(period), [feature]))
+        date_transformer = ColumnTransformer(transformers=dt_transformers)
 
-    X_model = pipe.fit(X)
-    X_preprocessed = X_model.transform(X)
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('numerical', numerical_transformer, numerical_features),
+                ('categorical', categorical_transformer, categorical_features),
+                ('date', date_transformer, date_features)
+            ],
+            remainder="drop",
+            n_jobs = 4
+        )
 
-    if(not only_X):
-        le = LabelEncoder()
-        y_model = le.fit(y.values.ravel())
-        y_encoded = y_model.transform(y.values.ravel())
+        pipe = make_pipeline(preprocessor)
 
-    save_artifact(data = X_model, name="X_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
-    if(not only_X):
-        save_artifact(data = y_model, name="y_transform_pipeline", tags=[version], materializer=SklearnMaterializer)
+        X_model = pipe.fit(X)
+        X_preprocessed = X_model.transform(X)
+
+        if(not only_X):
+            le = LabelEncoder()
+            y_model = le.fit(y.values.ravel())
+            y_encoded = y_model.transform(y.values.ravel())
+
+        save_artifact(data = X_model, name="X_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)
+        if(not only_X):
+            save_artifact(data = y_model, name="y_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)
 
     cat_col_names = X_model.named_steps['columntransformer'].named_transformers_['categorical'].named_steps['onehot'].get_feature_names_out(categorical_features)
     num_col_names = numerical_features
@@ -296,12 +318,12 @@ def load_features(X: pd.DataFrame, y: pd.DataFrame, version: str) -> None:
     print("Version: "+version)
 
 
-def extract_features(name, version, size = 1, return_df = False):
+def extract_features(name, version, random_state, size = 1, return_df = False ):
     client = Client()
     l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
     latest_artifact = sorted(l, key=lambda x: x.created)[-1]
     df = latest_artifact.load()
-    df = df.sample(frac = size, random_state = 88)
+    df = df.sample(frac = size, random_state = random_state)
 
     print("size of df is ", df.shape)
     print("df columns: ", df.columns)
@@ -316,8 +338,8 @@ def extract_features(name, version, size = 1, return_df = False):
 
     return X, y
 
-# def load_artifact(name: str, version: str) -> pd.DataFrame:
-    # return zenml.load_artifact(name, version)
+def load_artifact(name: str, version: str) -> pd.DataFrame:
+    return zenml.load_artifact(name, version)
 
 # if __name__=="__main__":
 #     df, version = extract_data()

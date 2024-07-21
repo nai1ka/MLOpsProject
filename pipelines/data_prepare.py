@@ -34,7 +34,7 @@ def transform(df: pd.DataFrame, version: str) -> Tuple[
 ]:
      with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
-        X, y = data.transform_data(df=df, version=version, cfg=config)
+        X, y = data.transform_data(df=df, version=version, cfg=config, transformer_version = "v1")
         return X, y
    
 

@@ -4,6 +4,8 @@ defaults:
   - data_version
   - experiment
   - model/model
+  - examples
+  - api
 
 hydra:
   mode: MULTIRUN

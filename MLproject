@@ -7,3 +7,22 @@ entry_points:
   
   evaluate:
     command: "python src/evaluate.py"
+
+  predict:
+    parameters:
+      example_version: 
+        type: string
+        default: "v1"
+      hostname:
+        type: string
+        default: "hostname"
+      port:
+        type: float
+        default: 5151
+      random_state:
+        type: float
+        default: 88
+      
+    # src/predict.py is decorated with @hydra.main to pass parameters at runtime
+    command: "python src/predict.py ++example_version={example_version} ++hostname={hostname} ++port={port} ++random_state={random_state}"
+    # TO RUN: mlflow run . --env-manager local -e predict -P example_version=v1 -P port=5151 -P random_state=14
