@@ -7,12 +7,29 @@ import os
 
 PROJECTPATH = os.environ['PROJECTPATH']
 
+def download_from_kaggle(url, filename):
+    # TODO to variable
+    os.environ['KAGGLE_USERNAME'] = 'nai1ka'
+    os.environ['KAGGLE_KEY'] = 'a44922ed88b8f8675c22ef8269d2232c'
+
+    import kaggle
+    from kaggle.api.kaggle_api_extended import KaggleApi
+    api = KaggleApi()
+    api.authenticate()
+
+
+    kaggle.api.dataset_download_files(url, path=PROJECTPATH+"/data", unzip=True)
+
 @hydra.main(version_base=None, config_path="../configs", config_name="main")
 def sample_data(cfg: DictConfig = None):
     """Create a sample of the dataset"""
     dataset_name = cfg.dataset_name
     output_name = cfg.output_name
     sample_version = int(cfg.sample_version[1:])
+
+    if not os.path.exists(PROJECTPATH+"/data/"+dataset_name):
+        print("File doesn't exist. Downloading")
+        download_from_kaggle(cfg.kaggle_url,dataset_name)
 
     # Load the dataset
     df = pd.read_csv(PROJECTPATH+"/data/" + dataset_name)

@@ -90,7 +90,6 @@ jobs:
           echo "AIRFLOW_HOME=$PWD/services/airflow" >> $GITHUB_ENV
           echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
-
       - name: Run ZenML server  
         run: zenml down && zenml up
         
