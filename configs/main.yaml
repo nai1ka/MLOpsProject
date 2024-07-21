@@ -1,5 +1,14 @@
-data:
-  sample_size: 0.2
-  sample_version: 1
-  dataset_name: rideshare_kaggle.csv
-  output_name: sample.csv
+defaults:
+  - _self_
+  - data
+  - data_version
+  - experiment
+  - model/model
+  - examples
+  - api
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      +model: "rf, lr"

@@ -1,0 +1,56 @@
+# .github/workflows/test-code.yaml
+
+name: Unit tests
+
+on:
+  push: 
+    branches:
+      - main
+
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'services/airflow/dags/**'
+      - 'tests/**'
+      - 'configs/**'
+      - '.github/**'
+permissions:
+  contents: read
+
+jobs:
+  test-code:
+    runs-on: ubuntu-latest 
+    defaults: 
+      run:
+        shell: bash
+        working-directory: .
+
+    steps:
+      - name: Checking out our code
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.0'
+          cache: 'pip'
+    
+      - name: install python packages
+        run: |
+            python3.11 -m pip install --upgrade pip 
+            pip3.11 install -r cicd_requirements.txt 
+        
+      - name: Export variables
+        run: | 
+          echo $PWD
+          echo "ZENML_CONFIG_PATH=$PWD/services/zenml" >> $GITHUB_ENV
+          echo "PROJECTPATH=$PWD" >> $GITHUB_ENV
+          echo "AIRFLOW_HOME=$PWD/services/airflow" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
+
+      # Run pytest on tests folder
+      - name: Test with pytest
+        run: pytest tests
+      
+
+

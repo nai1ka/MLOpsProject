@@ -1,0 +1,19 @@
+defaults:
+  - _self_
+
+folds: 3
+
+best_model_name: random_forest
+best_model_alias: champion
+
+evaluation_metric: "neg_mean_squared_error"
+cv_evaluation_metric: "mean_test_neg_mean_squared_error"
+
+pyfunc_predict_fn: "predict"
+
+r2_threshold: -100
+
+metrics:
+  mean_squared_error: "neg_mean_squared_error"
+  mean_absolute_error: "neg_mean_absolute_error"
+  r2_score: "r2"

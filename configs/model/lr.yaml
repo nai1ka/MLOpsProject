@@ -1,0 +1,12 @@
+model_name: linear_regression
+artifact_path: basic_lr
+
+tag_key: "model"
+tag_value: "basic LR"
+
+module_name: "sklearn.linear_model"
+class_name: "LinearRegression"
+
+params:
+  fit_intercept: [True, False]
+  n_jobs: [1, -1]
