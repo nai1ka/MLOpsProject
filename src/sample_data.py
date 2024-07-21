@@ -3,7 +3,9 @@ from omegaconf import DictConfig
 import pandas as pd
 from great_expectations.data_context import FileDataContext
 import sys
+import os
 
+PROJECTPATH = os.environ['PROJECTPATH']
 
 @hydra.main(version_base=None, config_path="../configs", config_name="main")
 def sample_data(cfg: DictConfig = None):
@@ -13,7 +15,7 @@ def sample_data(cfg: DictConfig = None):
     sample_version = int(cfg.sample_version[1:])
 
     # Load the dataset
-    df = pd.read_csv("../data/" + dataset_name)
+    df = pd.read_csv(PROJECTPATH+"/data/" + dataset_name)
 
     # Calculate the sample size
     sample_size = int(cfg.sample_size * len(df))
@@ -22,7 +24,7 @@ def sample_data(cfg: DictConfig = None):
     sample_df = df[(sample_version - 1) * sample_size:sample_version * sample_size]
 
     # Save the sample
-    sample_df.to_csv("../data/samples/" + output_name, index=False)
+    sample_df.to_csv(PROJECTPATH+"/data/samples/" + output_name, index=False)
 
 
 if __name__ == "__main__":
