@@ -67,7 +67,7 @@ jobs:
         # We can use operator `|` for a multi-line command
         run: |
             python3.11 -m pip install --upgrade pip 
-            pip3.11 install -r requirements.txt 
+            pip3.11 install -r cicd_requirements.txt 
         
         # You do not need to create a virtual environment here, just use the global installation of Python
         # Check if requirements.txt file is there
@@ -97,6 +97,7 @@ jobs:
       - name: Test with pytest
         run: |
           echo $PWD
+          echo $PROJECTPATH
           pytest tests
       
 
