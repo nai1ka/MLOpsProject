@@ -85,10 +85,11 @@ jobs:
       - name: Export variables
         run: | 
           echo $PWD
-          export ZENML_CONFIG_PATH=$PWD/services/zenml
-          export PROJECTPATH=$PWD
-          export AIRFLOW_HOME=$PWD/services/airflow
-          export PYTHONPATH=$PWD/src
+          echo "ZENML_CONFIG_PATH=$PWD/services/zenml" >> $GITHUB_ENV
+          echo "PROJECTPATH=$PWD" >> $GITHUB_ENV
+          echo "AIRFLOW_HOME=$PWD/services/airflow" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
+
 
       - name: Run ZenML server  
         run: zenml down && zenml up
