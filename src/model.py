@@ -122,33 +122,6 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         plt.tight_layout()
         save_plot(fig, "actual_vs_predicted_plot")
 
-        # Residual Histogram
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.histplot(residuals, kde=True, ax=ax)
-        ax.set_xlabel('Residuals')
-        ax.set_title('Residual Histogram')
-        ax.grid(True)
-        plt.tight_layout()
-        save_plot(fig, "residual_histogram")
-
-        # Residuals vs Fitted Values Plot
-        # fig, ax = plt.subplots(figsize=(8, 6))
-        # sns.residplot(x=predictions, y_test=residuals, lowess=True, line_kws={'color': 'red', 'lw': 1}, ax=ax)
-        # ax.set_xlabel('Fitted Values')
-        # ax.set_ylabel('Residuals')
-        # ax.set_title('Residuals vs Fitted Values')
-        # ax.grid(True)
-        # plt.tight_layout()
-        # save_plot(fig, "residuals_vs_fitted_values")
-
-        # # Normal Q-Q Plot
-        # fig, ax = plt.subplots(figsize=(8, 6))
-        # qqplot(residuals, line='s', ax=ax)
-        # ax.set_title('Normal Q-Q')
-        # ax.grid(True)
-        # plt.tight_layout()
-        # save_plot(fig, "normal_qq_plot")
-
         # Infer the model signature
         signature = mlflow.models.infer_signature(X_train, gs.predict(X_train))
 
@@ -215,7 +188,17 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 loaded_model = mlflow.sklearn.load_model(model_uri=model_uri)
 
                 predictions = loaded_model.predict(X_test) # type: ignore
-        
+
+                fig, ax = plt.subplots(figsize=(8, 6))
+                ax.scatter(y_test, predictions)
+                ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r', lw=2)
+                ax.set_xlabel('Actual Values')
+                ax.set_ylabel('Predicted Values')
+                ax.set_title('Actual vs Predicted Plot')
+                ax.grid(True)
+                plt.tight_layout()
+                save_plot(fig, "actual_vs_predicted_plot")
+
                 eval_data = pd.DataFrame(y_test)
                 eval_data.columns = ["label"]
                 eval_data["predictions"] = predictions

@@ -35,7 +35,20 @@ def get_artifact(name, version):
     latest_artifact = sorted(l, key=lambda x: x.created)[-1]
     return latest_artifact.load()
 
-def transform_data(df, cfg, version = None, return_df = False,  only_X = False, transformer_version = None,only_transform = False,):
+def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:00:00'):
+    impute_datetime = pd.to_datetime(impute_value)
+    def is_valid_datetime(dt_str):
+        try:
+            pd.to_datetime(dt_str)
+            return True
+        except:
+            return False
+    invalid_mask = ~df[datetime_column].apply(is_valid_datetime)
+    df.loc[invalid_mask, datetime_column] = impute_datetime
+    df[datetime_column] = pd.to_datetime(df[datetime_column])
+    return df
+
+def transform_data(df, cfg, version = None, return_df = False,  only_X = False, transformer_version = None, only_transform = False,):
 
     target_column = cfg.target_column
     day_of_week_column = cfg.day_of_week_column
@@ -52,9 +65,9 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
 
     if version is None:
         version = "v1"
-
     if(not only_X):
         df = df.dropna(subset=[target_column])
+    df = check_and_impute_datetime(df, datetime_column)
 
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
@@ -116,6 +129,8 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
             y_model = le.fit(y.values.ravel())
             y_encoded = y_model.transform(y.values.ravel())
 
+        if transformer_version is None:
+            transformer_version = version
         save_artifact(data = X_model, name="X_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)
         if(not only_X):
             save_artifact(data = y_model, name="y_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)

@@ -1,12 +1,13 @@
-model_name: linear_regression
-artifact_path: basic_lr
+model_name: ridge_regression
+artifact_path: basic_ridge
 
 tag_key: "model"
-tag_value: "basic LR"
+tag_value: "basic Ridge"
 
 module_name: "sklearn.linear_model"
-class_name: "LinearRegression"
+class_name: "Ridge"
 
 params:
+  alpha: [0.1, 1.0, 10.0]
   fit_intercept: [True, False]
-  n_jobs: [1, -1]
+  solver: ['auto', 'svd', 'cholesky']

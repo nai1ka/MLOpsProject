@@ -7,7 +7,7 @@ dvc add ../data/samples/sample.csv
 git add ../data/samples/sample.csv.dvc
 git commit -m "Add and version data sample"
 git push origin main
-git tag -a "v$version" -m "add data version v$version"
+git tag -a "$version" -m "add data version v$version"
 git push --tags
 echo "Data sample versioned"
 

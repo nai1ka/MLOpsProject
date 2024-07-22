@@ -25,6 +25,7 @@ def validate(cfg : DictConfig):
 
     dataset_name = cfg.dataset_name
 
+    df = df.dropna(subset=[TARGET_COLUMN])
 
     # Wrap your Pandas DataFrame with giskard.Dataset (validation or test set)
     giskard_dataset = giskard.Dataset(
@@ -64,13 +65,13 @@ def validate(cfg : DictConfig):
     predictions = predict(df[df.columns].head())
 
     giskard_model = giskard.Model(
-    model=predict,
-    model_type = "regression", # regression
-    feature_names = df.columns, # By default all columns of the passed dataframe
-    name=model_name, # Optional: give it a name to identify it in metadata
+        model=predict,
+        model_type = "regression", # regression
+        feature_names = df.columns, # By default all columns of the passed dataframe
+        name=model_name, # Optional: give it a name to identify it in metadata
     )
 
-    scan_results = giskard.scan(giskard_model, giskard_dataset)
+    scan_results = giskard.scan(giskard_model, giskard_dataset, raise_exceptions=True)
 
     # Save the results in `html` file
     scan_results_path = f"test_suite_{model_name}_{model_version}_{dataset_name}_{testdata_version}.html"

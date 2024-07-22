@@ -8,7 +8,7 @@ import subprocess
 import yaml
 from hydra import compose, initialize,initialize_config_dir
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash import BashOperator
 
 from sample_data import sample_data
 from validate_data import validate_initial_data

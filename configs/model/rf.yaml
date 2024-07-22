@@ -1,5 +1,3 @@
-# configs/model/rf.yaml
-
 model_name: random_forest
 artifact_path: basic_rf
 
@@ -9,13 +7,8 @@ tag_value: "basic RF"
 module_name: "sklearn.ensemble"
 class_name: "RandomForestRegressor"
 
-# params:
-#   n_estimators: [100, 200, 500]
-#   criterion: ['squared_error', 'absolute_error', 'poisson']
-#   random_state: [88] #, 100, 44]
-
-
 params:
-  n_estimators: [100]
-  criterion: ['squared_error']
-  random_state: [88] #, 100, 44]
+  n_estimators: [100,] # 300, 500]
+  criterion: ['squared_error',] # 'absolute_error', 'poisson']
+  max_depth: [10,] # 30, 50]
+  random_state: [88]
