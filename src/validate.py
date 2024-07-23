@@ -15,9 +15,8 @@ hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 @hydra.main(config_path="../configs", config_name="main")
 def validate(cfg : DictConfig):
-    version  = cfg.test_data_version
+    df, version = extract_data(cfg=cfg)
 
-    df = read_datastore()
     testdata_version = cfg.test_data_version
 
     TARGET_COLUMN = cfg.target_column
@@ -48,11 +47,12 @@ def validate(cfg : DictConfig):
     
     def predict(raw_df):
         X = transform_data(
-                            df = raw_df, 
-                            version = version, 
-                            cfg = cfg, 
-                            return_df = False,
-                            only_X = True)
+            df = raw_df, 
+            version = version, 
+            cfg = cfg, 
+            return_df = False,
+            only_X = True
+        )
 
         return model.predict(X) 
 

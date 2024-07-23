@@ -166,7 +166,6 @@ cython_debug/
 services/zenml
 mlruns
 multirun
-.dvc
 .pytest_cache
 datastore
 flagged

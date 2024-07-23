@@ -3,6 +3,7 @@ import numpy as np
 import os
 import yaml
 import zenml
+import dvc.api
 from zenml.client import Client
 from great_expectations import DataContext
 from great_expectations.checkpoint import Checkpoint
@@ -18,10 +19,26 @@ import sample_data
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
-def read_datastore() -> pd.DataFrame:
-    path = os.path.join(BASE_PATH, 'data/samples', 'sample.csv')
+def extract_data(cfg = None, version = None) -> (pd.DataFrame, str):
+    if cfg is None:
+        initialize(version_base=None, config_path="../configs")
+        cfg = compose(config_name="main")
+    
+    if version is None:
+        version = cfg.sample_version
+    
+    data_path = cfg.data_path
+    data_store = cfg.data_store
+
+    path = dvc.api.get_url(
+        rev=version,
+        path=data_path,
+        remote=data_store,
+        repo=BASE_PATH
+    )
+
     df = pd.read_csv(path)
-    return df
+    return df, version
 
 def get_artifact(name, version):
     client = Client()
@@ -350,9 +367,10 @@ def extract_features(name, version, random_state, size = 1, return_df = False ):
 def load_artifact(name: str, version: str) -> pd.DataFrame:
     return zenml.load_artifact(name, version)
 
-# if __name__=="__main__":
-#     df, version = extract_data()
-#     X, y = transform_data(df, version)
-#     print(X.head())
-#     print(X.info())
-#     print(y)
+if __name__=="__main__":
+    df, version = extract_data()
+    print(df)
+    # X, y = transform_data(df, version)
+    # print(X.head())
+    # print(X.info())
+    # print(y)

@@ -8,6 +8,6 @@ module_name: "sklearn.tree"
 class_name: "DecisionTreeRegressor"
 
 params:
-  criterion: ['squared_error'] # , 'absolute_error', 'poisson']
-  splitter: ["best"] #,  "random"]
-  max_depth: [10, 20, 30] #, 50, 100]
+  criterion: ['squared_error', 'absolute_error', 'poisson']
+  splitter: ["best", "random"]
+  max_depth: [10, 20, 30, 50, 100]
