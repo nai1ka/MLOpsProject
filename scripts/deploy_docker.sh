@@ -7,6 +7,8 @@ usage() {
     exit 1
 }
 
+
+
 # Parse command-line arguments
 while getopts "m:a:" opt; do
   case $opt in
@@ -19,12 +21,14 @@ while getopts "m:a:" opt; do
   esac
 done
 
+cd $PROJECTPATH
+
 mlflow models generate-dockerfile --model-uri models:/${model_name}@${model_alias} --env-manager local -d api
 
 
 cd api
 
-docker build -t predict_taxi_price_ml_service .
-docker run --rm -p 5151:8080 predict_taxi_price_ml_service -d
-docker tag my_ml_service nai1ka/predict_taxi_price_ml_service
-docker push nai1ka/predict_taxi_price_ml_service:latest
+sudo docker build -t predict_taxi_price_ml_service .
+sudo docker run --rm -p 5151:8080 predict_taxi_price_ml_service -d
+sudo docker tag my_ml_service nai1ka/predict_taxi_price_ml_service
+sudo docker push nai1ka/predict_taxi_price_ml_service:latest

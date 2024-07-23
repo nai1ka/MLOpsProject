@@ -1,2 +1,2 @@
-model_name: ridge_regression
-model_version: 18
+model_name: decision_tree_regression
+model_version: 24

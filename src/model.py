@@ -190,7 +190,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 model_uri = model_info.model_uri
                 loaded_model = mlflow.sklearn.load_model(model_uri=model_uri)
 
-                predictions = loaded_model.predict(X_test) # type: ignore
+                predictions = loaded_model.predict(X_test)
 
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.scatter(y_test, predictions)

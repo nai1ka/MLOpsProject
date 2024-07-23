@@ -37,10 +37,6 @@ def extract_data(cfg = None, version = None) -> (pd.DataFrame, str):
         repo=BASE_PATH
     )
 
-    if version == "v1":
-        path = BASE_PATH + "/datastore/files/md5/7e/eff7c7ce3a5799b435d53bc5ba951a"
-    elif version == "v2":
-        path = BASE_PATH + "/datastore/files/md5/bd/3f8fbf1dbe09e09605671e61a0962e"
     df = pd.read_csv(path)
     return df, version
 
@@ -65,6 +61,10 @@ def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:0
 
 def transform_data(df, cfg, version = None, return_df = False,  only_X = False, transformer_version = None, only_transform = False,):
 
+    if cfg is None:
+        initialize(version_base=None, config_path="../configs")
+        cfg = compose(config_name="main")
+        
     target_column = cfg.target_column
     day_of_week_column = cfg.day_of_week_column
     datetime_column = cfg.datetime_column

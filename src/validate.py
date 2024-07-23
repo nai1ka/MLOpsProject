@@ -1,6 +1,6 @@
 # src/validate.py
 
-from data import extract_data, read_datastore
+from data import extract_data
 from data import transform_data
 from evaluate import load_local_model
 import giskard
@@ -15,9 +15,11 @@ hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 @hydra.main(config_path="../configs", config_name="main")
 def validate(cfg : DictConfig):
-    df, version = extract_data(cfg=cfg)
 
-    testdata_version = cfg.test_data_version
+    test_version  = cfg.test_data_version
+    test_version='v1'
+
+    df, version = extract_data(cfg=cfg, version = test_version)
 
     TARGET_COLUMN = cfg.target_column
 
@@ -40,6 +42,7 @@ def validate(cfg : DictConfig):
     # You can sweep over challenger aliases using Hydra
     model_alias = cfg.model.best_model_alias
 
+    # TODO change name
     model: mlflow.pyfunc.PyFuncModel = load_local_model("challenger")
 
 
@@ -62,14 +65,14 @@ def validate(cfg : DictConfig):
     giskard_model = giskard.Model(
         model=predict,
         model_type = "regression", # regression
-        feature_names = df.columns, # By default all columns of the passed dataframe
+        feature_names = df.columns,
         name=model_name
     )
 
     scan_results = giskard.scan(giskard_model, giskard_dataset, raise_exceptions=True)
 
     # Save the results in `html` file
-    scan_results_path = f"test_suite_{model_name}_{dataset_name}_{testdata_version}.html"
+    scan_results_path = f"test_suite_{model_name}_{dataset_name}_{test_version}.html"
     scan_results.to_html(scan_results_path)
 
     suite_name = f"test_suite_{model_name}_{dataset_name}_{version}"

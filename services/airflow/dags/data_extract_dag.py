@@ -1,6 +1,7 @@
 from airflow import DAG
 
 from datetime import timedelta, datetime
+import hydra
 import pandas as pd
 import great_expectations as ge
 import os
@@ -16,6 +17,7 @@ def take_sample():
     # TODO maybe find a better way to navigate
     path = os.environ["PYTHONPATH"]
     os.chdir(path)
+    hydra.core.global_hydra.GlobalHydra.instance().clear()
     initialize_config_dir(config_dir=f"{path}/../configs")
     cfg = compose(config_name="main")
     # Run sample_data function with Hydra configuration
@@ -24,6 +26,7 @@ def take_sample():
 def validate():
     path = os.environ["PYTHONPATH"]
     os.chdir(path)
+    hydra.core.global_hydra.GlobalHydra.instance().clear()
     initialize_config_dir(config_dir=f"{path}/../configs")
     cfg = compose(config_name="main")
     validate_initial_data(cfg)
