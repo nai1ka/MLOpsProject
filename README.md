@@ -21,7 +21,6 @@
 ![Test code workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/test-code.yaml/badge.svg)
 
 
-git stash show -p|git apply
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -64,15 +63,6 @@ Unfair taxi prices can lead to customer dissatisfaction and affect profitability
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-
-
-### Prerequisites
-
-Install the required packages using the following commands:
-  ```sh
-    
-  ```
 
 ### Installation
 
