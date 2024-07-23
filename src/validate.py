@@ -1,6 +1,6 @@
 # src/validate.py
 
-from data import read_datastore
+from data import extract_data, read_datastore
 from data import transform_data
 from evaluate import load_local_model
 import giskard

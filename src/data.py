@@ -37,6 +37,10 @@ def extract_data(cfg = None, version = None) -> (pd.DataFrame, str):
         repo=BASE_PATH
     )
 
+    if version == "v1":
+        path = BASE_PATH + "/datastore/files/md5/7e/eff7c7ce3a5799b435d53bc5ba951a"
+    elif version == "v2":
+        path = BASE_PATH + "/datastore/files/md5/bd/3f8fbf1dbe09e09605671e61a0962e"
     df = pd.read_csv(path)
     return df, version
 
@@ -370,6 +374,7 @@ def load_artifact(name: str, version: str) -> pd.DataFrame:
 if __name__=="__main__":
     df, version = extract_data()
     print(df)
+    print(df.info())
     # X, y = transform_data(df, version)
     # print(X.head())
     # print(X.info())

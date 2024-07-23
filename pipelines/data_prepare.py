@@ -20,6 +20,7 @@ def extract() -> Tuple[
      with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
         df, version = data.extract_data(cfg=config)
+        print(df.info())
         return df, version
 
 
