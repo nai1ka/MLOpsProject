@@ -86,8 +86,7 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
 
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
-    if(not only_X):
-        y = df[target_column]
+    y = df[target_column]
 
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
@@ -95,12 +94,7 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
         if transformer_version is None:
             transformer_version = version
         X_model = get_artifact("X_transform_pipeline", version = transformer_version)
-        if not only_X:
-            y_model = get_artifact("y_transform_pipeline", version = transformer_version)
-
         X_preprocessed = X_model.transform(X)
-        if not only_X:
-            y_encoded = y_model.transform(y)
     else:
 
         categorical_transformer = Pipeline(steps=[
@@ -139,16 +133,9 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
         X_model = pipe.fit(X)
         X_preprocessed = X_model.transform(X)
 
-        if(not only_X):
-            le = LabelEncoder()
-            y_model = le.fit(y.values.ravel())
-            y_encoded = y_model.transform(y.values.ravel())
-
         if transformer_version is None:
             transformer_version = version
         save_artifact(data = X_model, name="X_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)
-        if(not only_X):
-            save_artifact(data = y_model, name="y_transform_pipeline", tags=[transformer_version], materializer=SklearnMaterializer)
 
     cat_col_names = X_model.named_steps['columntransformer'].named_transformers_['categorical'].named_steps['onehot'].get_feature_names_out(categorical_features)
     num_col_names = numerical_features
@@ -159,12 +146,8 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
     all_col_names = np.concatenate([num_col_names, cat_col_names, date_col_names])
 
     X_final = pd.DataFrame(X_preprocessed, columns=all_col_names)
-    if(not only_X):
-        y_final = pd.DataFrame(y_encoded, columns=[target_column])
 
     X_final.columns = X_final.columns.astype(str)
-    if(not only_X):
-        y_final.columns = y_final.columns.astype(str)
 
     def add_missing_columns(dff, required_columns):
         for col in required_columns:
@@ -252,14 +235,13 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
 
     X_final = X_final[right_order]
    
-
     if return_df:
-        df = pd.concat([X_final, y_final], axis=1)
+        df = pd.concat([X_final, y], axis=1)
         return df
     else:
         if(only_X):
             return X_final
-        return X_final, y_final
+        return X_final, y
 
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     context = FileDataContext(context_root_dir="../services/gx")
