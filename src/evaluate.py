@@ -1,33 +1,23 @@
+import os
+import hydra
+import mlflow
 from mlflow.tracking import MlflowClient
 
+BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
-def get_models_with_alias(alias):
-    client = MlflowClient()
+def load_local_model(name):
+    return mlflow.sklearn.load_model(BASE_PATH+"/models/"+name)
 
-    # List all registered models
-    registered_models = client.list_registered_models()
-    
-    # Set to keep track of model names with 'champion' alias
-    champion_models = set()
-
-    # Iterate through each registered model
-    for model in registered_models:
-        model_name = model.name
-        
-        # List all versions of the current model
-        versions = client.list_model_versions(model_name)
-        
-        # Check each version for the 'champion' alias
-        for version in versions:
-            version_details = client.get_model_version(model_name, version.version)
-            if alias in version_details.aliases:
-                champion_models.add(model_name)
-                break  # No need to check further versions for this model
-
-    return champion_models
 
 def evaluate(sample_version, model_alias):
-    # Initialize the MLflow client
-    print(get_models_with_alias("champion"))
+    print(load_local_model(BASE_PATH+"/models/"+model_alias))
+    # TODO
+   
+    
 
-evaluate(1,1)
+@hydra.main(config_path="../configs", config_name="main", version_base=None)
+def main(cfg = None):
+    evaluate(cfg.evaluate_sample_version, cfg.evaluate_model_alias)
+
+if __name__ == "__main__":
+    main()

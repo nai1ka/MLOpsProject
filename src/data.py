@@ -23,12 +23,6 @@ def read_datastore() -> pd.DataFrame:
     df = pd.read_csv(path)
     return df
 
-
-
-def extract_data() -> (pd.DataFrame, str):
-    df = read_datastore()
-    return df
-
 def get_artifact(name, version):
     client = Client()
     l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items

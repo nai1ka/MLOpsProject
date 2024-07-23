@@ -1,7 +1,6 @@
 import hydra
 from model import train, log_metadata
 from data import extract_features
-from omegaconf import OmegaConf
 from sklearn.model_selection import train_test_split
 
 def run(cfg):
@@ -20,7 +19,7 @@ def run(cfg):
     log_metadata(cfg, gs, X_train, y_train, X_test, y_test)
 
     
-@hydra.main(config_path="../configs", config_name="main", version_base=None) # type: ignore
+@hydra.main(config_path="../configs", config_name="main", version_base=None) 
 def main(cfg=None):
     run(cfg)
 

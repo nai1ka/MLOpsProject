@@ -19,7 +19,7 @@ def extract() -> Tuple[
 ]:
      with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
-        df = data.extract_data()
+        df = data.read_datastore()
         return df, config.sample_version
 
 

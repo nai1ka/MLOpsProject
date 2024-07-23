@@ -18,7 +18,7 @@ from validate_data import validate_initial_data
 
 dag = DAG(
     'data_prepare_dag',
-    schedule=timedelta(minutes=5),
+    schedule=timedelta(minutes=10),
     start_date=datetime(2021, 1, 1),
     catchup=False,
 )
@@ -27,9 +27,8 @@ extract_data_sensor = ExternalTaskSensor(
     dag=dag,
     task_id='extract_data_sensor',
     external_dag_id='data_extract_dag',
-    timeout=300,
-    poke_interval=20,
-    mode='poke'
+    external_task_id='load_data',
+    timeout=400
 )
 
 prepare_task = BashOperator(

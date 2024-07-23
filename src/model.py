@@ -1,3 +1,4 @@
+import os
 import warnings
 warnings.filterwarnings('ignore')
 from sklearn.model_selection import GridSearchCV
@@ -7,6 +8,8 @@ import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 import importlib
+
+BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 def train(X_train, y_train, cfg):
 
@@ -216,6 +219,17 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
             
         dst_path = "results"
         artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
-        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)    # mlflow.end_run()  
+        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
+
     
-    # mlflow.end_run()  
+
+
+def get_models_with_alias(model_name,model_alias, return_version = False):
+    client = mlflow.MlflowClient()
+    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
+    if(return_version):
+        return model, client.get_model_version_by_alias(name = model_name, alias=model_alias)
+    return model
+
+def save_model(model, model_alias):
+    mlflow.sklearn.save_model(model, BASE_PATH+"/models/"+model_alias)

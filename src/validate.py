@@ -1,22 +1,23 @@
 # src/validate.py
 
-from data import extract_data
+from data import read_datastore
 from data import transform_data
+from evaluate import load_local_model
 import giskard
 import hydra
 from sklearn.metrics import r2_score
 from omegaconf import DictConfig, OmegaConf
 import mlflow
 
+from model import get_models_with_alias
+
 hydra.core.global_hydra.GlobalHydra.instance().clear()
 
-@hydra.main(version_base=None, config_path="../configs", config_name="main")
+@hydra.main(config_path="../configs", config_name="main")
 def validate(cfg : DictConfig):
-   
-
     version  = cfg.test_data_version
 
-    df = extract_data()
+    df = read_datastore()
     testdata_version = cfg.test_data_version
 
     TARGET_COLUMN = cfg.target_column
@@ -40,13 +41,8 @@ def validate(cfg : DictConfig):
     # You can sweep over challenger aliases using Hydra
     model_alias = cfg.model.best_model_alias
 
-    model: mlflow.pyfunc.PyFuncModel =  mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
+    model: mlflow.pyfunc.PyFuncModel = load_local_model("challenger")
 
-    client = mlflow.MlflowClient()
-
-    mv = client.get_model_version_by_alias(name = model_name, alias=model_alias)
-
-    model_version = mv.version
 
     # Add missing columns to the dataframe and fill them with zeros
     
@@ -56,8 +52,7 @@ def validate(cfg : DictConfig):
                             version = version, 
                             cfg = cfg, 
                             return_df = False,
-                            only_X = True
-                        )
+                            only_X = True)
 
         return model.predict(X) 
 
@@ -68,16 +63,16 @@ def validate(cfg : DictConfig):
         model=predict,
         model_type = "regression", # regression
         feature_names = df.columns, # By default all columns of the passed dataframe
-        name=model_name, # Optional: give it a name to identify it in metadata
+        name=model_name
     )
 
     scan_results = giskard.scan(giskard_model, giskard_dataset, raise_exceptions=True)
 
     # Save the results in `html` file
-    scan_results_path = f"test_suite_{model_name}_{model_version}_{dataset_name}_{testdata_version}.html"
+    scan_results_path = f"test_suite_{model_name}_{dataset_name}_{testdata_version}.html"
     scan_results.to_html(scan_results_path)
 
-    suite_name = f"test_suite_{model_name}_{model_version}_{dataset_name}_{version}"
+    suite_name = f"test_suite_{model_name}_{dataset_name}_{version}"
     test_suite = giskard.Suite(name = suite_name)
 
     # TODO: probably move r2_threshold in yaml

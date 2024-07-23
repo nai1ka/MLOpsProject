@@ -3,7 +3,7 @@ defaults:
 
 folds: 3
 
-best_model_name: random_forest
+best_model_name: ridge_regression
 best_model_alias: champion
 
 evaluation_metric: "neg_mean_squared_error"
@@ -11,7 +11,7 @@ cv_evaluation_metric: "mean_test_neg_mean_squared_error"
 
 pyfunc_predict_fn: "predict"
 
-r2_threshold: -100
+r2_threshold: 0.9
 
 metrics:
   mean_squared_error: "neg_mean_squared_error"
