@@ -6,12 +6,12 @@ data_path: 'data/samples/sample.csv'
 
 sample_size: 0.2
 kaggle_url: brllrb/uber-and-lyft-dataset-boston-ma
-# TODO
-dataset_name: experiment.csv
+dataset_name: rideshare_kaggle.csv
 output_name: sample.csv
 day_of_week_column: 'day_of_week' 
 datetime_column: 'datetime'
 target_column: 'price'
+
 categorical_columns:
   - 'source'
   - 'destination'
