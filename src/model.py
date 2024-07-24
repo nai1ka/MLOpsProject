@@ -15,7 +15,6 @@ def train(X_train, y_train, cfg):
 
     # Define the model hyperparameters
     params = cfg.model.params
-    print(params)
 
     # Train the model
     module_name = cfg.model.module_name # e.g. "sklearn.linear_model"
@@ -46,7 +45,7 @@ def train(X_train, y_train, cfg):
         n_jobs = cfg.cv_n_jobs,
         refit = evaluation_metric,
         cv = cv,
-        verbose = 1,
+        verbose = 2,
         return_train_score = True
     )
 
@@ -61,7 +60,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
     best_metrics_keys = [metric for metric in gs.cv_results_]
     best_metrics_dict = {k:v for k,v in zip(best_metrics_keys, best_metrics_values) if 'mean' in k or 'std' in k}
 
-    # print(cv_results, cv_results.columns)
+    print(cv_results, cv_results.columns)
 
     params = best_metrics_dict
 
@@ -167,15 +166,6 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 estimator = class_instance(**ps)
                 estimator.fit(X_train, y_train)
 
-                # from sklearn.model_selection import cross_val_score
-                # scores = cross_val_score(estimator=estimator, 
-                #                          X_train, 
-                #                          y_train, 
-                #                          cv = cfg.model.folds, 
-                #                          n_jobs=cfg.cv_n_jobs,
-                #                          scoring=cfg.model.cv_evaluation_metric)
-                # cv_evaluation_metric = scores.mean()
-                
                 signature = mlflow.models.infer_signature(X_train, estimator.predict(X_train))
 
                 model_info = mlflow.sklearn.log_model(
@@ -190,7 +180,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 model_uri = model_info.model_uri
                 loaded_model = mlflow.sklearn.load_model(model_uri=model_uri)
 
-                predictions = loaded_model.predict(X_test) # type: ignore
+                predictions = loaded_model.predict(X_test)
 
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.scatter(y_test, predictions)
@@ -218,11 +208,10 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
             
         dst_path = "results"
+        if not os.path.exists(dst_path):
+            os.makedirs(dst_path)
         artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
         mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
-
-    
-
 
 def get_models_with_alias(model_name,model_alias, return_version = False):
     client = mlflow.MlflowClient()

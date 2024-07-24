@@ -1,6 +1,7 @@
 # api/app.py
 
 from flask import Flask, request, jsonify, abort, make_response
+import pandas as pd
 import requests
 import mlflow
 import mlflow.pyfunc
@@ -38,16 +39,20 @@ def home():
 @app.route("/predict", methods = ["POST"])
 def predict():
 
-    content = request.get_json()
-    formatted_content = json.dumps(content, indent=2)
+	content = request.get_json()
+	formatted_content = json.dumps(content, indent=2)
 
-    response = requests.post(
-        url=f"http://localhost:5151/invocations",
-        data=formatted_content,
-        headers={"Content-Type": "application/json"},
-    )
-    
-    return jsonify(response.json()), response.status_code
+	input_df = pd.DataFrame([content['inputs']])
+
+	# Make predictions
+	predictions = model.predict(input_df)
+
+	# Create a response with predictions
+	response = {
+		"price": predictions[0]
+	}
+	
+	return jsonify(response), 200
 
 # This will run a local server to accept requests to the API.
 if __name__ == "__main__":

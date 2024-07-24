@@ -1,33 +1,40 @@
 import json
+import random
 import requests
 import hydra
+
 from data import extract_features
 
 @hydra.main(config_path="../configs", config_name="main", version_base=None) 
-def predict(cfg = None):
-    X, y = extract_features(name = "features_target", 
-                        version = cfg.example_version, 
-                        random_state=cfg.random_state)
+def predict(cfg=None):
+    # Extract features and target from ZenML artifact store
+    X, y = extract_features(name="features_target", 
+                            version=cfg.example_version)
 
-    example = X.iloc[0,:]
-    example_target = y[0]
+    # Set the random state for reproducibility
+    random.seed(555)
 
-    example = json.dumps( 
-    { "inputs": example.to_dict() }
-     )
+    # Generate a random index
+    random_index = random.randint(0, len(X) - 1)
+    
+    # Select the example and its corresponding target
+    example = X.iloc[random_index, :]
+    example_target = y[random_index]
 
-    payload = example
-    print(payload)
+    # Convert the example to JSON format
+    example = json.dumps({"inputs": example.to_dict()})
 
+    # Send a POST request with the example data
     response = requests.post(
         url=f"http://localhost:{cfg.port}/invocations",
-        data=payload,
+        data=example,
         headers={"Content-Type": "application/json"},
     )
 
-    print(response.json())
-    print("Example target:", example_target)
+    # Print the prediction and the actual target value
+    print("\nPrediction:", response.json()['predictions'])
+    print("Target:", example_target)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     predict()

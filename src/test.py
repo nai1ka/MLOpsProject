@@ -1,14 +1,48 @@
+import mlflow
+import pandas as pd
+
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score,mean_absolute_percentage_error
+
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
+import zenml
+from zenml.client import Client
+
 import os
 import zenml
 from zenml.client import Client
 import dvc.api
 
-BASE_PATH = os.path.expandvars("$PROJECTPATH")
-print(BASE_PATH)
-t = dvc.api.get_url(
-        rev = "v2",
-        path = "data/samples/sample.csv",
-        remote = "localstore",
-        repo = BASE_PATH
-    )
-print(t)
+from data import transform_data
+from evaluate import load_local_model
+BASE_PATH = os.path.expandvars ("$PROJECTPATH")
+
+
+test_data = pd.read_csv(BASE_PATH+"/data/samples/sample.csv")
+#model: mlflow.pyfunc.PyFuncModel = load_local_model("challenger")
+model = mlflow.pyfunc.load_model(model_uri=f"models:/ridge_regression@champion")
+X,y = transform_data(
+            df = test_data, 
+            cfg = None,
+            version = "v2", 
+            return_df = False
+        )
+
+# model = Ridge(alpha=10,fit_intercept=False,solver="cholesky")
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print(y_pred)
+mse = mean_squared_error(y_test, y_pred)
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+mape = mean_absolute_percentage_error(y_test, y_pred)
+
+
+# Print the metrics
+print(f"Mean Squared Error (MSE): {mse}")
+print(f"Mean Absolute Error (MAE): {mae}")
+print(f"R^2 Score: {r2}")
+print(f'MAPE: {mape}')
