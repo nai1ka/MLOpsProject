@@ -8,8 +8,6 @@ defaults:
   - api
 
 hydra:
-  mode: MULTIRUN
   sweeper:
     params:
-      # +model: "rf, dt, lr"
-      +model: "dt, lr"
+      +model: "rf, lr"

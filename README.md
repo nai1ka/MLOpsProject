@@ -91,7 +91,7 @@ Unfair taxi prices can lead to customer dissatisfaction and affect profitability
    ```
 4. Run Gradio web UI
    ```sh
-   gradio run src/ui.py
+   python3 src/ui.py
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -127,7 +127,3 @@ The project can be used to predict taxi prices based on time, location, and weat
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->

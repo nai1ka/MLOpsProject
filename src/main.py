@@ -12,7 +12,7 @@ def run(cfg):
 
     test_data_version = cfg.test_data_version
 
-    X_test, y_test = extract_features(name = "features_target", version=test_data_version,random_state = cfg.random_state)
+    X_test, y_test = extract_features(name = "features_target", version=test_data_version, random_state = cfg.random_state)
 
     gs = train(X_train, y_train, cfg=cfg)
 

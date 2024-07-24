@@ -1,6 +1,9 @@
 defaults:
   - _self_
 
+data_store: localstore
+data_path: 'data/samples/sample.csv'
+
 sample_size: 0.2
 kaggle_url: brllrb/uber-and-lyft-dataset-boston-ma
 dataset_name: rideshare_kaggle.csv
