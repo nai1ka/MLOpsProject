@@ -1,6 +1,6 @@
 # .github/workflows/test-code.yaml
 
-name: Unit tests
+name: Validate model
 
 on:
   push: 
