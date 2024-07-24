@@ -10,9 +10,12 @@ def load_local_model(name):
     return mlflow.sklearn.load_model(BASE_PATH+"/models/"+name)
 
 
-def evaluate(sample_version, sample_random_state, model_alias):
-    X, y = extract_features(name = "features_target", version=sample_version, random_state=sample_random_state)
-    model = load_local_model(model_alias)
+def evaluate(evaluate_saved_model=True, sample_version=None, model_alias=None, model=None, X_test=None, y_test = None):
+    if evaluate_saved_model:
+        X, y = extract_features(name = "features_target", version=sample_version)
+        model = load_local_model(model_alias)
+    else:
+        X, y = X_test, y_test
 
     y_pred = model.predict(X)
 
@@ -30,7 +33,6 @@ def evaluate(sample_version, sample_random_state, model_alias):
 def main(cfg = None):
     evaluate(
         sample_version=cfg.evaluate_sample_version,
-        sample_random_state=cfg.random_state,
         model_alias=cfg.evaluate_model_alias
     )
 
