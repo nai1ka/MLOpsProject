@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: airflow
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_PASSWORD: mlops
       PGDATA: /data/postgres
     volumes:
        - postgres:/data/postgres

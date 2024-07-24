@@ -11,4 +11,4 @@ defaults:
 hydra:
   sweeper:
     params:
-      +model: "rf, dt, lr"
+      +model: "rf, lr"

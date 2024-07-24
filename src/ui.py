@@ -13,12 +13,10 @@ import pandas as pd
 initialize(version_base=None, config_path="../configs")
 cfg = compose(config_name="main")
 
-# You need to define a parameter for each column in your raw dataset
 def predict(apparentTemperature = None,
             distance = None,
             hour = None,
             month = None,
-            day_of_week = None,
             day = None,
             surge_multiplier = None,
             precipIntensity = None,
@@ -36,7 +34,6 @@ def predict(apparentTemperature = None,
             name = None,
             short_summary = None):
     
-    # This will be a dict of column values for input data sample
     datetime_df = pd.DataFrame({
                    'year': [2018],
                    'month': [month],
@@ -48,7 +45,6 @@ def predict(apparentTemperature = None,
             "distance" : distance,
             "hour" : hour,
             "month" : month,
-            "day_of_week" : day_of_week,
             "day" : day,
             "surge_multiplier" : surge_multiplier,
             "precipIntensity" : precipIntensity,
@@ -68,9 +64,7 @@ def predict(apparentTemperature = None,
             "datetime": pd.to_datetime(datetime_df)
     }
     
-    # print(features)
     
-    # Build a dataframe of one row
     raw_df = pd.DataFrame(features, index=[0])
     
     # This will read the saved transformers "v4" from ZenML artifact store
@@ -100,10 +94,7 @@ def predict(apparentTemperature = None,
         headers={"Content-Type": "application/json"},
     )
     
-    # Change this to some meaningful output for your model
-    # For classification, it returns the predicted label
-    # For regression, it returns the predicted value
-    return response.json()
+    return response.json()['price']
 
 # Only one interface is enough
 demo = gr.Interface(
@@ -114,11 +105,10 @@ demo = gr.Interface(
     # will populated from the values of these input components
     inputs = [
         # Select proper components for data types of the columns in your raw dataset
-        gr.Number(label="apparentTemperature"), 
-        gr.Number(label="distance"),
+        gr.Number(label="apparentTemperature", info = "in Fahrenheit"), 
+        gr.Number(label="distance", info = "in miles"),
         gr.Number(label="hour"),
         gr.Number(label="month"),
-        gr.Number(label="day_of_week"),
         gr.Number(label="day"),
         gr.Number(label="surge_multiplier"),
         gr.Number(label="precipIntensity"),
@@ -131,20 +121,20 @@ demo = gr.Interface(
         gr.Number(label="cloudCover"),
         gr.Number(label="uvIndex"),
         gr.Number(label="precipIntensityMax"),
-        gr.Dropdown(label="source", choices=['Haymarket Square', 'Back Bay', 'North End', 'North Station', 'Beacon Hill'
+        gr.Dropdown(label="source", choices=['Haymarket Square', 'Back Bay', 'North End', 'North Station', 'Beacon Hill',
  'Boston University', 'Fenway', 'South Station', 'Theatre District',
  'West End', 'Financial District' ,'Northeastern University']), 
-        gr.Dropdown(label="destination", choices=['North Station' ,'Northeastern University', 'West End' ,'Haymarket Square'
+        gr.Dropdown(label="destination", choices=['North Station' ,'Northeastern University', 'West End' ,'Haymarket Square',
  'South Station' ,'Fenway', 'Theatre District', 'Beacon Hill', 'Back Bay'
  'North End', 'Financial District', 'Boston University']), 
-        gr.Dropdown(label="name", choices=['Shared', 'Lux' ,'Lyft' ,'Lux Black XL', 'Lyft XL', 'Lux Black', 'UberXL'
+        gr.Dropdown(label="name", choices=['Shared', 'Lux' ,'Lyft' ,'Lux Black XL', 'Lyft XL', 'Lux Black', 'UberXL',
  'Black', 'UberX', 'WAV', 'Black SUV' ,'UberPool', 'Taxi']), 
         gr.Dropdown(label="short_summary", choices=[' Mostly Cloudy ', ' Rain ' ,' Clear ' ,' Partly Cloudy ', ' Overcast ',
  ' Light Rain ' ,' Foggy ', ' Possible Drizzle ' ,' Drizzle ']),   
     ],
     
     # The outputs here will get the returned value from `predict` function
-    outputs = gr.Text(label="prediction result"),
+    outputs = gr.Text(label="Taxi ride price prediction"),
     
     # This will provide the user with examples to test the API
     examples="data/examples"
@@ -155,6 +145,3 @@ demo = gr.Interface(
 
 # Launch the web UI locally on port 5155
 demo.launch(server_port = 5155,server_name="0.0.0.0")
-
-# Launch the web UI in Gradio cloud on port 5155
-# demo.launch(share=True, server_port = 5155)

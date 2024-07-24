@@ -1,34 +1,16 @@
 from airflow import DAG
 
-from datetime import timedelta, datetime
-import pandas as pd
+from datetime import datetime
 import great_expectations as ge
-import os
-from airflow.sensors.external_task import ExternalTaskSensor
-import subprocess
-import yaml
-from hydra import compose, initialize,initialize_config_dir
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
-
-from sample_data import sample_data
-from validate_data import validate_initial_data
-
 
 
 dag = DAG(
     'data_prepare_dag',
-    schedule=timedelta(minutes=5),
+    schedule_interval=None,
     start_date=datetime(2021, 1, 1),
     catchup=False,
-)
-
-extract_data_sensor = ExternalTaskSensor(
-    dag=dag,
-    task_id='extract_data_sensor',
-    external_dag_id='data_extract_dag',
-    external_task_id='load_data',
-    timeout=400
 )
 
 prepare_task = BashOperator(
@@ -37,4 +19,4 @@ prepare_task = BashOperator(
     dag=dag,
 )
 
-extract_data_sensor >> prepare_task
+prepare_task

@@ -2,25 +2,21 @@ from airflow import DAG
 
 from datetime import timedelta, datetime
 import hydra
-import pandas as pd
-import great_expectations as ge
 import os
-import subprocess
-import yaml
-from hydra import compose, initialize,initialize_config_dir
+from hydra import compose, initialize_config_dir
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 from sample_data import sample_data
 from validate_data import validate_initial_data
+
+BASE_PATH = os.environ["PYTHONPATH"]
 def take_sample():
-    # TODO maybe find a better way to navigate
-    path = os.environ["PYTHONPATH"]
-    os.chdir(path)
+    os.chdir(BASE_PATH)
     hydra.core.global_hydra.GlobalHydra.instance().clear()
-    initialize_config_dir(config_dir=f"{path}/../configs")
+    initialize_config_dir(config_dir=f"{BASE_PATH}/../configs")
     cfg = compose(config_name="main")
-    # Run sample_data function with Hydra configuration
     sample_data(cfg)
 
 def validate():
@@ -35,7 +31,7 @@ def validate():
 
 dag = DAG(
     'data_extract_dag',
-    schedule=timedelta(minutes=5),
+    schedule_interval=timedelta(minutes=5),
     start_date=datetime(2021, 1, 1),
     catchup=False,
 )
@@ -63,4 +59,10 @@ load_task = BashOperator(
     dag=dag,
 )
 
-extract_task >> validate_task >> version_task >> load_task
+trigger = TriggerDagRunOperator(
+    task_id='trigger_dagrun',
+    trigger_dag_id='data_prepare_dag',
+    dag=dag,
+)
+
+extract_task >> validate_task >> version_task >> load_task >> trigger

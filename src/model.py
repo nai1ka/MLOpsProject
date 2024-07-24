@@ -15,7 +15,6 @@ def train(X_train, y_train, cfg):
 
     # Define the model hyperparameters
     params = cfg.model.params
-    print(params)
 
     # Train the model
     module_name = cfg.model.module_name # e.g. "sklearn.linear_model"
