@@ -130,7 +130,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         for index, result in cv_results.iterrows():
 
             child_run_name = "_".join(['child', run_name, str(index)]) # type: ignore
-            with mlflow.start_run(run_name = child_run_name, experiment_id= experiment_id, nested=True): #, tags=best_metrics_dict):
+            with mlflow.start_run(run_name = child_run_name, experiment_id= experiment_id, nested=True) as child_run: #, tags=best_metrics_dict):
                 ps = result.filter(regex='param_').to_dict()
                 ms = result.filter(regex='mean_').to_dict()
                 stds = result.filter(regex='std_').to_dict()
@@ -214,8 +214,8 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
                 print(f"metrics:\n{results.metrics}")
 
-                dst_path = "results"
                 artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
+                dst_path = f"{BASE_PATH}/results/{child_run.info.run_id}"
                 mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
 
 
