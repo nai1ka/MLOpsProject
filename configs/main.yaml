@@ -6,10 +6,9 @@ defaults:
   - model/model
   - examples
   - api
+  - evaluate
 
 hydra:
-  mode: MULTIRUN
   sweeper:
     params:
-      # +model: "rf, dt, lr"
-      +model: "dt, lr"
+      +model: "rf, dt, lr"
