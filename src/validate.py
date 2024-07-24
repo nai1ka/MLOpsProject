@@ -25,7 +25,8 @@ def validate(cfg: DictConfig=None):
     if(not "sample_url" in cfg):
         df, version = extract_data(cfg=cfg, version=test_version)
     else:
-        print("Downloading file from URL")
+        # Download sample from URL (for CI/CD purposes)
+        print("Downloading file from URL:")
         df = pd.read_csv(cfg.sample_url)
         version = test_version
 

@@ -52,7 +52,7 @@ jobs:
       # Run pytest on tests folder
 
       - name: Validate the model
-        run: python3 src/validate.py model.challenger_model_aliases=['challenger']  '+sample_url="https://drive.google.com/uc?export=download&id=1zMnmmt1vUn1k09TdpdlENv_MBRyWz-hx"' 'test_data_version="v5"'
+        run: python3 src/validate.py model.challenger_model_aliases=['challenger']  '+sample_url='"https://drive.google.com/uc?export=download&id=1_we1maZ7kgBsAr5dEUQ8VGSV6kXmyPFU"' 'test_data_version="v5"'
       
 
 
