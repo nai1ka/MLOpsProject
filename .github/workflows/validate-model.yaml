@@ -19,7 +19,7 @@ permissions:
 
 
 jobs:
-  test-code:
+  validate-model:
     runs-on: ubuntu-latest 
     defaults: 
       run:

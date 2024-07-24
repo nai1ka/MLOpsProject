@@ -167,7 +167,6 @@ services/zenml
 mlruns
 multirun
 .pytest_cache
-datastore
 flagged
 .vscode
 outputs
