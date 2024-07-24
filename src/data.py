@@ -286,7 +286,7 @@ def save_features_target(X: pd.DataFrame, y: pd.DataFrame, version: str):
     # Save the concatenated DataFrame as an artifact with the specified version tag
     zenml.save_artifact(data=df, name="features_target", tags=[version])
 
-    print("Saved ersion:", version)
+    print("Saved version:", version)
 
 
 def get_artifact(name, version):
