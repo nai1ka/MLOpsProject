@@ -45,7 +45,7 @@ def train(X_train, y_train, cfg):
         n_jobs = cfg.cv_n_jobs,
         refit = evaluation_metric,
         cv = cv,
-        verbose = 2,
+        verbose = 1,
         return_train_score = True
     )
 
@@ -110,20 +110,6 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
             fig.savefig(plt_path)
             mlflow.log_artifact(plt_path, artifact_path=artifact_path)
 
-        predictions = gs.best_estimator_.predict(X_test)
-        residuals = y_test - predictions
-
-        # Actual vs Predicted Plot
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.scatter(y_test, predictions)
-        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r', lw=2)
-        ax.set_xlabel('Actual Values')
-        ax.set_ylabel('Predicted Values')
-        ax.set_title('Actual vs Predicted Plot')
-        ax.grid(True)
-        plt.tight_layout()
-        save_plot(fig, "actual_vs_predicted_plot")
-
         # Infer the model signature
         signature = mlflow.models.infer_signature(X_train, gs.predict(X_train))
 
@@ -181,7 +167,9 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 loaded_model = mlflow.sklearn.load_model(model_uri=model_uri)
 
                 predictions = loaded_model.predict(X_test)
+                residuals = y_test - predictions
 
+                # Actual vs Predicted Plot
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.scatter(y_test, predictions)
                 ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--r', lw=2)
@@ -191,6 +179,26 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 ax.grid(True)
                 plt.tight_layout()
                 save_plot(fig, "actual_vs_predicted_plot")
+
+                # Distribution of Residuals
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.histplot(residuals, kde=True, ax=ax)
+                ax.set_title('Distribution of Residuals')
+                ax.set_xlabel('Residuals')
+                ax.grid(True)
+                plt.tight_layout()
+                save_plot(fig, "distribution_of_residuals")
+
+                # Residuals vs. Fitted Values Plot
+                fig, ax = plt.subplots(figsize=(8, 6))
+                ax.scatter(predictions, residuals)
+                ax.axhline(y=0, color='r', linestyle='--')
+                ax.set_xlabel('Fitted Values')
+                ax.set_ylabel('Residuals')
+                ax.set_title('Residuals vs Fitted Values')
+                ax.grid(True)
+                plt.tight_layout()
+                save_plot(fig, "residuals_vs_fitted_plot")
 
                 eval_data = pd.DataFrame(y_test)
                 eval_data.columns = ["label"]
@@ -206,12 +214,10 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
                 print(f"metrics:\n{results.metrics}")
 
-            
-        dst_path = "results"
-        if not os.path.exists(dst_path):
-            os.makedirs(dst_path)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
-        mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
+                dst_path = "results"
+                artifact_uri = mlflow.get_artifact_uri(artifact_path="plots")
+                mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
+
 
 def get_models_with_alias(model_name,model_alias, return_version = False):
     client = mlflow.MlflowClient()
