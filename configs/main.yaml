@@ -6,6 +6,7 @@ defaults:
   - model/model
   - examples
   - api
+  - evaluate
 
 hydra:
   sweeper:

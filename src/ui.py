@@ -69,14 +69,13 @@ def predict(apparentTemperature = None,
     
     # This will read the saved transformers "v4" from ZenML artifact store
     # And only transform the input data (no fit here).
-    X = transform_data(
-                        df = raw_df, 
-                        cfg = cfg, 
-                        return_df = False, 
-                        only_X = True,
-                        transformer_version="v1",
-                        only_transform=True
-                      )
+    X, y = transform_data(
+        df = raw_df, 
+        cfg = cfg, 
+        return_df = False, 
+        transformer_version="v1",
+        only_transform=True
+    )
     
     # Convert it into JSON
     example = X.iloc[0,:]

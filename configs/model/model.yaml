@@ -6,6 +6,9 @@ folds: 3
 best_model_name: ridge_regression
 best_model_alias: champion
 
+challenger_model_names: ["ridge_regression", "random_forest"]
+challenger_model_aliases: ["challenger1", "challenger2"]
+
 evaluation_metric: "neg_mean_squared_error"
 cv_evaluation_metric: "mean_test_neg_mean_squared_error"
 

@@ -1,11 +1,14 @@
 name: Predicting taxi ride price
 
 entry_points:
-
   extract:
     command: "airflow dags test data_extract_dag"
+
   transform:
     command: "python3 pipelines/data_prepare.py"
+
+  validate:
+    command: "python src/validate.py"
 
   main:
     command: "python src/main.py --multirun"
@@ -18,8 +21,8 @@ entry_points:
       evaluate_model_alias:
         type: string
         default: "champion"
-    
-    command: "python src/evaluate.py ++evaluate_sample_version={evaluate_sample_version} ++evaluate_model_alias={evaluate_model_alias}"
+    command: "python src/evaluate.py evaluate_sample_version={evaluate_sample_version} evaluate_model_alias={evaluate_model_alias}"
+    # command: "python src/evaluate.py ++evaluate_sample_version={evaluate_sample_version} ++evaluate_model_alias={evaluate_model_alias}"
     # mlflow run . --env-manager local -e evaluate
 
   predict:
@@ -39,4 +42,5 @@ entry_points:
       
     # src/predict.py is decorated with @hydra.main to pass parameters at runtime
     command: "python src/predict.py ++example_version={example_version} ++hostname={hostname} ++port={port} ++random_state={random_state}"
+    # TODO
     # TO RUN: mlflow run . --env-manager local -e predict -P example_version=v1 -P port=5151 -P random_state=14
