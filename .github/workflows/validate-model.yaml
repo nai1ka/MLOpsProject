@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
 
+
 jobs:
   test-code:
     runs-on: ubuntu-latest 
@@ -49,7 +50,7 @@ jobs:
           echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
 
       # Run pytest on tests folder
-      
+
       - name: Validate the model
         run: python3 src/validate.py model.challenger_model_aliases=['challenger']
       

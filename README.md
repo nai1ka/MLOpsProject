@@ -19,6 +19,7 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 ![Test code workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/test-code.yaml/badge.svg)
+![Validate model workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/validate-model.yaml/badge.svg)
 
 
 <!-- PROJECT LOGO -->

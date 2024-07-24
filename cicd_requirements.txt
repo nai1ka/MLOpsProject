@@ -10,3 +10,4 @@ seaborn
 zenml[server]
 mlflow==2.14.1
 giskard==2.14.0
+dvc
