@@ -7,3 +7,6 @@ numpy
 giskard==2.14.0
 kaggle==1.6.14
 seaborn
+zenml[server]
+mlflow==2.14.1
+giskard==2.14.0
