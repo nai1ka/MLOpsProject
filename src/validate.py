@@ -1,6 +1,8 @@
 # src/validate.py
 
 import os
+
+import pandas as pd
 from data import extract_data, transform_data
 from evaluate import load_local_model
 import giskard
@@ -17,10 +19,16 @@ BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 
 @hydra.main(config_path="../configs", config_name="main")
-def validate(cfg: DictConfig):
+def validate(cfg: DictConfig=None):
     test_version = cfg.test_data_version
 
-    df, version = extract_data(cfg=cfg, version=test_version)
+    if(not "sample_url" in cfg):
+        df, version = extract_data(cfg=cfg, version=test_version)
+    else:
+        # Download sample from URL (for CI/CD purposes)
+        print("Downloading file from URL:")
+        df = pd.read_csv(cfg.sample_url)
+        version = test_version
 
     TARGET_COLUMN = cfg.target_column
 
@@ -99,3 +107,4 @@ def validate(cfg: DictConfig):
 
 if __name__ == "__main__":
     validate()
+    #sample_url="https://drive.google.com/uc?export=download&id=1zMnmmt1vUn1k09TdpdlENv_MBRyWz-hx", sample_version='v5'
