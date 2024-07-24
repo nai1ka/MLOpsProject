@@ -11,3 +11,4 @@ params:
   criterion: ['squared_error', 'absolute_error', 'poisson']
   splitter: ["best", "random"]
   max_depth: [10, 20, 30, 50, 100]
+  random_state: [88]

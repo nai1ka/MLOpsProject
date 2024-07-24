@@ -64,7 +64,7 @@ def load(X: pd.DataFrame, y: pd.DataFrame, version: str) -> Tuple[
     ArtifactConfig(name="target",
                    tags=["data_preparation"])]
 ]:
-    data.load_features(X, y, version)
+    data.save_features_target(X, y, version)
 
     return X, y
 
@@ -79,9 +79,3 @@ def prepare_data_pipeline():
 
 if __name__ == "__main__":
     run = prepare_data_pipeline()
-
-    # version = data.get_data_version()
-    # print(version)
-    # df = data.load_artifact(name="features_target", version=version)
-    # print("Retrieved DataFrame:")
-    # print(df.head())

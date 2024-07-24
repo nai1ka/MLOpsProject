@@ -17,7 +17,6 @@ hydra.core.global_hydra.GlobalHydra.instance().clear()
 def validate(cfg : DictConfig):
 
     test_version  = cfg.test_data_version
-    test_version='v1'
 
     df, version = extract_data(cfg=cfg, version = test_version)
 
@@ -59,7 +58,6 @@ def validate(cfg : DictConfig):
 
         return model.predict(X) 
 
-   
     predictions = predict(df[df.columns].head())
 
     giskard_model = giskard.Model(
@@ -72,8 +70,10 @@ def validate(cfg : DictConfig):
     scan_results = giskard.scan(giskard_model, giskard_dataset, raise_exceptions=True)
 
     # Save the results in `html` file
-    scan_results_path = f"test_suite_{model_name}_{dataset_name}_{test_version}.html"
+    #scan_results_path = f"test_suite_{model_name}_{dataset_name}_{test_version}.html"
+    scan_results_path = "test123.html"
     scan_results.to_html(scan_results_path)
+    print("Report saved")
 
     suite_name = f"test_suite_{model_name}_{dataset_name}_{version}"
     test_suite = giskard.Suite(name = suite_name)
