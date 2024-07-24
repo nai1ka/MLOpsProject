@@ -21,21 +21,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With
 
-* ![Airflow](https://img.shields.io/badge/Airflow-v2.7.3-blue?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
-* ![Mlflow](https://img.shields.io/badge/MLFlow-v2.14.1-blue?style=for-the-badge&logo=mlflow&logoColor=61DAFB)
-* ![Airflow](https://img.shields.io/badge/DVC-945DD6?style=for-the-badge&logo=dvc&logoColor=white)
-* ![ZenML](https://img.shields.io/badge/ZENML-ae7bdb?style=for-the-badge)
-* ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-* ![Hydra](https://img.shields.io/badge/Hydra-7bbac7?style=for-the-badge&logoColor=white)
-* ![Numpy](https://img.shields.io/badge/Numpy-777BB4?style=for-the-badge&logo=numpy&logoColor=white)
-* ![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)
-* ![SKLearn](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
-* ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-* ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Getting Started
 
@@ -110,7 +96,21 @@ curl -X POST localhost:5151/invocations \
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Built With
 
+* ![Airflow](https://img.shields.io/badge/Airflow-v2.7.3-blue?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
+* ![Mlflow](https://img.shields.io/badge/MLFlow-v2.14.1-blue?style=for-the-badge&logo=mlflow&logoColor=61DAFB)
+* ![Airflow](https://img.shields.io/badge/DVC-945DD6?style=for-the-badge&logo=dvc&logoColor=white)
+* ![ZenML](https://img.shields.io/badge/ZENML-ae7bdb?style=for-the-badge)
+* ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+* ![Hydra](https://img.shields.io/badge/Hydra-7bbac7?style=for-the-badge&logoColor=white)
+* ![Numpy](https://img.shields.io/badge/Numpy-777BB4?style=for-the-badge&logo=numpy&logoColor=white)
+* ![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)
+* ![SKLearn](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+* ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+* ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contributors
 
