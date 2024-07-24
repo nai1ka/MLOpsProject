@@ -18,7 +18,7 @@ from validate_data import validate_initial_data
 
 dag = DAG(
     'data_prepare_dag',
-    schedule=timedelta(minutes=10),
+    schedule=timedelta(minutes=5),
     start_date=datetime(2021, 1, 1),
     catchup=False,
 )

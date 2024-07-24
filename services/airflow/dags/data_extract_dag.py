@@ -35,7 +35,7 @@ def validate():
 
 dag = DAG(
     'data_extract_dag',
-    schedule=timedelta(minutes=10),
+    schedule=timedelta(minutes=5),
     start_date=datetime(2021, 1, 1),
     catchup=False,
 )

@@ -54,12 +54,13 @@ def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:0
             return True
         except:
             return False
+    df = df.copy()
     invalid_mask = ~df[datetime_column].apply(is_valid_datetime)
     df.loc[invalid_mask, datetime_column] = impute_datetime
     df[datetime_column] = pd.to_datetime(df[datetime_column])
     return df
 
-def transform_data(df, cfg, version = None, return_df = False,  only_X = False, transformer_version = None, only_transform = False,):
+def transform_data(df, cfg, version = None, return_df = False,  transformer_version = None, only_transform = False,):
 
     if cfg is None:
         initialize(version_base=None, config_path="../configs")
@@ -79,14 +80,14 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
     }
 
     if version is None:
-        version = "v1"
-    if(not only_X):
-        df = df.dropna(subset=[target_column])
+        version = cfg.sample_version
+
+    df = df.dropna(subset=[target_column])
     df = check_and_impute_datetime(df, datetime_column)
 
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
-    y = df[target_column]
+    y = df[[target_column]]
 
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
@@ -155,9 +156,8 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
                 dff[col] = 0.0
         return dff
 
-# TODO to other place
+    # TODO to other place
 
-    
     hardcoded = ['source_Back Bay', 'source_Beacon Hill', 'source_Boston University', 'source_Fenway', 'source_Financial District', 'source_Haymarket Square', 'source_North End', 'source_North Station', 'source_Northeastern University', 'source_South Station', 'source_Theatre District', 'source_West End', 'destination_Back Bay', 'destination_Beacon Hill', 'destination_Boston University', 'destination_Fenway', 'destination_Financial District', 'destination_Haymarket Square', 'destination_North End', 'destination_North Station', 'destination_Northeastern University', 'destination_South Station', 'destination_Theatre District', 'destination_West End', 'name_Black', 'name_Black SUV', 'name_Lux', 'name_Lux Black', 'name_Lux Black XL', 'name_Lyft', 'name_Lyft XL', 'name_Shared', 'name_Taxi', 'name_UberPool', 'name_UberX', 'name_UberXL', 'name_WAV', 'short_summary_ Clear ', 'short_summary_ Drizzle ', 'short_summary_ Foggy ', 'short_summary_ Light Rain ', 'short_summary_ Mostly Cloudy ', 'short_summary_ Overcast ', 'short_summary_ Partly Cloudy ', 'short_summary_ Possible Drizzle ', 'short_summary_ Rain ']
     
     X_final = add_missing_columns(X_final, hardcoded)
@@ -239,8 +239,6 @@ def transform_data(df, cfg, version = None, return_df = False,  only_X = False, 
         df = pd.concat([X_final, y], axis=1)
         return df
     else:
-        if(only_X):
-            return X_final
         return X_final, y
 
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
@@ -335,7 +333,6 @@ def extract_features(name, version, random_state, size = 1, return_df = False ):
     l = client.list_artifact_versions(name = name, tag = version, sort_by="version").items
     latest_artifact = sorted(l, key=lambda x: x.created)[-1]
     df = latest_artifact.load()
-    df = df.sample(frac = size, random_state = random_state)
 
     print("size of df is ", df.shape)
     print("df columns: ", df.columns)
