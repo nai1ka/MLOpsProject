@@ -1,5 +1,6 @@
 import os
 import warnings
+
 warnings.filterwarnings('ignore')
 from sklearn.model_selection import GridSearchCV
 import seaborn as sns
@@ -10,6 +11,7 @@ import mlflow.sklearn
 import importlib
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
+
 
 def train(X_train, y_train, cfg):
     """
@@ -29,7 +31,7 @@ def train(X_train, y_train, cfg):
 
     # Train the model
     module_name = cfg.model.module_name
-    class_name  = cfg.model.class_name
+    class_name = cfg.model.class_name
 
     import importlib
 
@@ -46,26 +48,27 @@ def train(X_train, y_train, cfg):
     param_grid = dict(params)
 
     # Define the scoring metrics
-    scoring = list(cfg.model.metrics.values()) 
+    scoring = list(cfg.model.metrics.values())
 
     evaluation_metric = cfg.model.evaluation_metric
 
     # Initialize GridSearchCV
     gs = GridSearchCV(
-        estimator = estimator,
-        param_grid = param_grid,
-        scoring = scoring,
-        n_jobs = cfg.cv_n_jobs,
-        refit = evaluation_metric,
-        cv = cv,
-        verbose = 1,
-        return_train_score = True
+        estimator=estimator,
+        param_grid=param_grid,
+        scoring=scoring,
+        n_jobs=cfg.cv_n_jobs,
+        refit=evaluation_metric,
+        cv=cv,
+        verbose=1,
+        return_train_score=True
     )
 
     # Fit the GridSearchCV
     gs.fit(X_train, y_train)
 
     return gs
+
 
 def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
     """
@@ -84,28 +87,29 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
     cv_results = pd.DataFrame(gs.cv_results_).filter(regex=r'std_|mean_|param_').sort_index(axis=1)
     best_metrics_values = [result[1][gs.best_index_] for result in gs.cv_results_.items()]
     best_metrics_keys = [metric for metric in gs.cv_results_]
-    best_metrics_dict = {k:v for k,v in zip(best_metrics_keys, best_metrics_values) if 'mean' in k or 'std' in k}
+    best_metrics_dict = {k: v for k, v in zip(best_metrics_keys, best_metrics_values) if 'mean' in k or 'std' in k}
 
     print(cv_results, cv_results.columns)
 
     params = best_metrics_dict
 
-    df_train = pd.concat([X_train, y_train], axis = 1)
-    df_test = pd.concat([X_test, y_test], axis = 1)
+    df_train = pd.concat([X_train, y_train], axis=1)
+    df_test = pd.concat([X_test, y_test], axis=1)
 
-    experiment_name = cfg.model.model_name + "_" + cfg.experiment_name 
+    experiment_name = cfg.model.model_name + "_" + cfg.experiment_name
 
     try:
         # Create a new MLflow Experiment
         experiment_id = mlflow.create_experiment(name=experiment_name)
     except mlflow.exceptions.MlflowException as e:
         # If experiment already exists, get its ID
-        experiment_id = mlflow.get_experiment_by_name(name=experiment_name).experiment_id # type: ignore
-    
+        experiment_id = mlflow.get_experiment_by_name(name=experiment_name).experiment_id  # type: ignore
+
     print("experiment-id : ", experiment_id)
 
     cv_evaluation_metric = cfg.model.cv_evaluation_metric
-    run_name = "_".join([cfg.run_name, cfg.model.model_name, cfg.model.evaluation_metric, str(params[cv_evaluation_metric]).replace(".", "_")]) # type: ignore
+    run_name = "_".join([cfg.run_name, cfg.model.model_name, cfg.model.evaluation_metric,
+                         str(params[cv_evaluation_metric]).replace(".", "_")])  # type: ignore
     print("run name: ", run_name)
 
     if (mlflow.active_run()):
@@ -116,10 +120,11 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         pass
 
     # Parent run
-    with mlflow.start_run(run_name = run_name, experiment_id = experiment_id) as run:
+    with mlflow.start_run(run_name=run_name, experiment_id=experiment_id) as run:
         # Log training and testing datasets
-        df_train_dataset = mlflow.data.pandas_dataset.from_pandas(df = df_train, targets = cfg.target_column) # type: ignore
-        df_test_dataset = mlflow.data.pandas_dataset.from_pandas(df = df_test, targets = cfg.target_column) # type: ignore
+        df_train_dataset = mlflow.data.pandas_dataset.from_pandas(df=df_train,
+                                                                  targets=cfg.target_column)  # type: ignore
+        df_test_dataset = mlflow.data.pandas_dataset.from_pandas(df=df_test, targets=cfg.target_column)  # type: ignore
         mlflow.log_input(df_train_dataset, "training")
         mlflow.log_input(df_test_dataset, "testing")
 
@@ -150,52 +155,52 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
         # Log the model
         model_info = mlflow.sklearn.log_model(
-            sk_model = gs.best_estimator_,
-            artifact_path = cfg.model.artifact_path,
-            signature = signature,
-            input_example = X_train.iloc[0].to_numpy(),
-            registered_model_name = cfg.model.model_name,
-            pyfunc_predict_fn = cfg.model.pyfunc_predict_fn
+            sk_model=gs.best_estimator_,
+            artifact_path=cfg.model.artifact_path,
+            signature=signature,
+            input_example=X_train.iloc[0].to_numpy(),
+            registered_model_name=cfg.model.model_name,
+            pyfunc_predict_fn=cfg.model.pyfunc_predict_fn
         )
 
         client = mlflow.client.MlflowClient()
-        client.set_model_version_tag(name = cfg.model.model_name, version=model_info.registered_model_version, key="source", value="best_Grid_search_model")
-
+        client.set_model_version_tag(name=cfg.model.model_name, version=model_info.registered_model_version,
+                                     key="source", value="best_Grid_search_model")
 
         for index, result in cv_results.iterrows():
-
-            child_run_name = "_".join(['child', run_name, str(index)]) # type: ignore
-            with mlflow.start_run(run_name = child_run_name, experiment_id= experiment_id, nested=True) as child_run: #, tags=best_metrics_dict):
+            child_run_name = "_".join(['child', run_name, str(index)])  # type: ignore
+            with mlflow.start_run(run_name=child_run_name, experiment_id=experiment_id,
+                                  nested=True) as child_run:  # , tags=best_metrics_dict):
                 ps = result.filter(regex='param_').to_dict()
                 ms = result.filter(regex='mean_').to_dict()
                 stds = result.filter(regex='std_').to_dict()
 
                 # Remove param_ from the beginning of the keys
-                ps = {k.replace("param_",""):v for (k,v) in ps.items()}
+                ps = {k.replace("param_", ""): v for (k, v) in ps.items()}
 
                 mlflow.log_params(ps)
                 mlflow.log_metrics(ms)
                 mlflow.log_metrics(stds)
 
                 # We will create the estimator at runtime
-                module_name = cfg.model.module_name # e.g. "sklearn.linear_model"
-                class_name  = cfg.model.class_name # e.g. "LogisticRegression"
+                module_name = cfg.model.module_name  # e.g. "sklearn.linear_model"
+                class_name = cfg.model.class_name  # e.g. "LogisticRegression"
 
                 # Load "module.submodule.MyClass"
                 class_instance = getattr(importlib.import_module(module_name), class_name)
-                
+
                 estimator = class_instance(**ps)
                 estimator.fit(X_train, y_train)
 
                 signature = mlflow.models.infer_signature(X_train, estimator.predict(X_train))
 
                 model_info = mlflow.sklearn.log_model(
-                    sk_model = estimator,
-                    artifact_path = cfg.model.artifact_path,
-                    signature = signature,
-                    input_example = X_train.iloc[0].to_numpy(),
-                    registered_model_name = cfg.model.model_name,
-                    pyfunc_predict_fn = cfg.model.pyfunc_predict_fn
+                    sk_model=estimator,
+                    artifact_path=cfg.model.artifact_path,
+                    signature=signature,
+                    input_example=X_train.iloc[0].to_numpy(),
+                    registered_model_name=cfg.model.model_name,
+                    pyfunc_predict_fn=cfg.model.pyfunc_predict_fn
                 )
 
                 model_uri = model_info.model_uri
@@ -254,7 +259,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
                 mlflow.artifacts.download_artifacts(artifact_uri=artifact_uri, dst_path=dst_path)
 
 
-def get_models_with_alias(model_name,model_alias, return_version = False):
+def get_models_with_alias(model_name, model_alias, return_version=False):
     """
     Retrieve model from MLflow registry using model name and alias.
     
@@ -268,9 +273,10 @@ def get_models_with_alias(model_name,model_alias, return_version = False):
     """
     client = mlflow.MlflowClient()
     model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
-    if(return_version):
-        return model, client.get_model_version_by_alias(name = model_name, alias=model_alias)
+    if (return_version):
+        return model, client.get_model_version_by_alias(name=model_name, alias=model_alias)
     return model
+
 
 def save_model(model, model_alias):
     """
@@ -280,7 +286,8 @@ def save_model(model, model_alias):
         model: Model to be saved.
         model_alias (str): Alias name for saving the model.
     """
-    mlflow.sklearn.save_model(model, BASE_PATH+"/models/"+model_alias)
+    mlflow.sklearn.save_model(model, BASE_PATH + "/models/" + model_alias)
+
 
 def download_model(model_name, model_alias):
     """
@@ -294,6 +301,7 @@ def download_model(model_name, model_alias):
     model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
     client.download_artifacts(model.metadata.run_id, "basic_rf", "models")
 
+
 def load_local_model(name):
     """
     Load a locally saved model using MLflow.
@@ -304,4 +312,4 @@ def load_local_model(name):
     Returns:
         Model object: Loaded model.
     """
-    return mlflow.sklearn.load_model(BASE_PATH+"/models/"+name)
+    return mlflow.sklearn.load_model(BASE_PATH + "/models/" + name)

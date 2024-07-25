@@ -1,25 +1,22 @@
-# src/validate.py
-
 import os
 
-import pandas as pd
-from pydantic import BaseModel
-from sklearn.metrics import mean_absolute_percentage_error
-from data import extract_data, transform_data
-from evaluate import load_local_model
 import giskard
 import hydra
-from omegaconf import DictConfig, OmegaConf
 import mlflow
+import pandas as pd
+from data import extract_data, transform_data
+from evaluate import load_local_model
+from omegaconf import DictConfig, OmegaConf
+from pydantic import BaseModel
+from sklearn.metrics import mean_absolute_percentage_error
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 
 @giskard.test(name="MAPE score", tags=["quality", "custom"])
 def test_mape(model: giskard.models.base.BaseModel,
-                             dataset: giskard.datasets.Dataset,
-                             threshold: float):
-    
+              dataset: giskard.datasets.Dataset,
+              threshold: float):
     y_true = dataset.df[dataset.target]
     y_pred = model.predict(dataset).raw_prediction
 
@@ -30,8 +27,8 @@ def test_mape(model: giskard.models.base.BaseModel,
 
     return giskard.TestResult(passed=passed, metric=mape)
 
-@hydra.main(config_path="../configs", config_name="main")
-def validate(cfg: DictConfig=None):
+
+def core_validate(cfg: DictConfig = None):
     """
     Validate models using the provided configuration.
     
@@ -40,7 +37,7 @@ def validate(cfg: DictConfig=None):
     """
     test_version = cfg.test_data_version
 
-    if(not "sample_url" in cfg):
+    if (not "sample_url" in cfg):
         df, version = extract_data(cfg=cfg, version=test_version)
     else:
         # Download sample from URL (for CI/CD purposes)
@@ -72,7 +69,7 @@ def validate(cfg: DictConfig=None):
 
     # TODO change name
     for model_name, model_alias in zip(model_names, model_aliases):
-         # Load the local model (from models folder) using its alias
+        # Load the local model (from models folder) using its alias
         model: mlflow.pyfunc.PyFuncModel = load_local_model(model_alias)
 
         # Add missing columns to the dataframe and fill them with zeros
@@ -94,7 +91,7 @@ def validate(cfg: DictConfig=None):
         # Wrap the prediction function with giskard.Model
         giskard_model = giskard.Model(
             model=predict,
-            model_type="regression", 
+            model_type="regression",
             feature_names=df.columns,
             name=model_name
         )
@@ -109,7 +106,6 @@ def validate(cfg: DictConfig=None):
         suite_name = f"test_suite_{model_name}_{dataset_name}_{version}"
         test_suite = giskard.Suite(name=suite_name)
 
-
         # Define an R2 score test
         test1 = giskard.testing.test_r2(
             model=giskard_model,
@@ -117,7 +113,7 @@ def validate(cfg: DictConfig=None):
             threshold=cfg.model.r2_threshold
         )
 
-        test2 =  test_mape(model=giskard_model, dataset=giskard_dataset, threshold=cfg.model.mape_threshold)
+        test2 = test_mape(model=giskard_model, dataset=giskard_dataset, threshold=cfg.model.mape_threshold)
 
         test_suite.add_test(test1)
         test_suite.add_test(test2)
@@ -127,6 +123,12 @@ def validate(cfg: DictConfig=None):
             print(f"Passed model validation for {model_name}!")
         else:
             print(f"Model {model_name} has vulnerabilities!")
+
+
+@hydra.main(config_path="../configs", config_name="main")
+def validate(cfg: DictConfig = None):
+    core_validate(cfg)
+
 
 if __name__ == "__main__":
     validate()

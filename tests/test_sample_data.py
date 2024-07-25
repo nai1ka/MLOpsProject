@@ -1,19 +1,9 @@
 import os
-import pytest
-from hydra import compose, initialize
 import pandas as pd
 
 from src.sample_data import sample_data
 
-
 PROJECTPATH = os.environ['PROJECTPATH']
-
-@pytest.fixture(scope="module")
-def config():
-    """Load the configuration file for the tests"""
-    with initialize(config_path="../configs", version_base=None):
-        config = compose(config_name="main")
-        return config
 
 
 def test_sample_data_creates_sample(config):
