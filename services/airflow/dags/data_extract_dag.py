@@ -1,12 +1,12 @@
-from airflow import DAG
-
+import os
 from datetime import timedelta, datetime
 import hydra
-import os
-from hydra import compose, initialize_config_dir
+from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from hydra import compose, initialize_config_dir
+
 
 from sample_data import sample_data
 from validate_data import validate_initial_data

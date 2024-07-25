@@ -1,23 +1,19 @@
+from hydra import compose, initialize
 import pandas as pd
-import zenml
 from typing_extensions import Tuple, Annotated
 from zenml import step, pipeline, ArtifactConfig
 import data
-from hydra import compose, initialize
-import os
+
 
 @step(enable_cache=False)
 def extract() -> Tuple[
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="extracted_data",
-                   tags=["data_preparation"]
-                   )
+    Annotated[
+        pd.DataFrame,
+        ArtifactConfig(name="extracted_data", tags=["data_preparation"]),
     ],
-    Annotated[str,
-    ArtifactConfig(name="data_version",
-                   tags=["data_preparation"])]
+    Annotated[str, ArtifactConfig(name="data_version", tags=["data_preparation"])],
 ]:
-     with initialize(config_path="../configs", version_base=None):
+    with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
         df, version = data.extract_data(cfg=config)
         print(df.shape, version)
@@ -26,29 +22,30 @@ def extract() -> Tuple[
 
 @step(enable_cache=False)
 def transform(df: pd.DataFrame, version: str) -> Tuple[
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="input_features",
-                   tags=["data_preparation"])],
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="input_target",
-                   tags=["data_preparation"])]
+    Annotated[
+        pd.DataFrame, ArtifactConfig(name="input_features", tags=["data_preparation"])
+    ],
+    Annotated[
+        pd.DataFrame, ArtifactConfig(name="input_target", tags=["data_preparation"])
+    ],
 ]:
-     with initialize(config_path="../configs", version_base=None):
+    with initialize(config_path="../configs", version_base=None):
         config = compose(config_name="main")
-        X, y = data.transform_data(df=df, version=version, cfg=config, transformer_version = "v1")
+        X, y = data.transform_data(
+            df=df, version=version, cfg=config, transformer_version="v1"
+        )
         return X, y
-   
 
 
 @step(enable_cache=False)
-def validate(X: pd.DataFrame,
-             y: pd.DataFrame) -> Tuple[
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="valid_input_features",
-                   tags=["data_preparation"])],
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="valid_target",
-                   tags=["data_preparation"])]
+def validate(X: pd.DataFrame, y: pd.DataFrame) -> Tuple[
+    Annotated[
+        pd.DataFrame,
+        ArtifactConfig(name="valid_input_features", tags=["data_preparation"]),
+    ],
+    Annotated[
+        pd.DataFrame, ArtifactConfig(name="valid_target", tags=["data_preparation"])
+    ],
 ]:
     X, y = data.validate_features(X, y)
 
@@ -57,12 +54,8 @@ def validate(X: pd.DataFrame,
 
 @step(enable_cache=False)
 def load(X: pd.DataFrame, y: pd.DataFrame, version: str) -> Tuple[
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="features",
-                   tags=["data_preparation"])],
-    Annotated[pd.DataFrame,
-    ArtifactConfig(name="target",
-                   tags=["data_preparation"])]
+    Annotated[pd.DataFrame, ArtifactConfig(name="features", tags=["data_preparation"])],
+    Annotated[pd.DataFrame, ArtifactConfig(name="target", tags=["data_preparation"])],
 ]:
     data.save_features_target(X, y, version)
 

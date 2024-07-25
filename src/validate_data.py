@@ -1,7 +1,4 @@
-import sys
-
 import hydra
-import pandas as pd
 from great_expectations.data_context import FileDataContext
 from omegaconf import DictConfig
 
@@ -9,10 +6,10 @@ from omegaconf import DictConfig
 def validate_data(cfg: DictConfig = None):
     """
     Validate the initial data using Great Expectations.
-    
+
     This function initializes a Great Expectations context, sets up a data source,
     creates a batch request, and validates the data against a predefined expectation suite.
-    
+
     Args:
         cfg (DictConfig): Configuration object from Hydra.
     """
@@ -26,8 +23,7 @@ def validate_data(cfg: DictConfig = None):
 
     # Add a CSV asset for the new data
     sample = ds.add_csv_asset(
-        name="sample_csv",
-        filepath_or_buffer=f"../{cfg.data_path}"
+        name="sample_csv", filepath_or_buffer=f"../{cfg.data_path}"
     )
 
     # Build a batch request
@@ -35,8 +31,7 @@ def validate_data(cfg: DictConfig = None):
 
     # Get a validator
     validator = context.get_validator(
-        batch_request=batch_request,
-        expectation_suite_name=suite_name
+        batch_request=batch_request, expectation_suite_name=suite_name
     )
 
     # Validate the data

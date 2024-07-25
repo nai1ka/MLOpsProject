@@ -1,15 +1,28 @@
 import os
 import hydra
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+    mean_absolute_percentage_error,
+)
 from data import extract_features
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from model import load_local_model
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
-def evaluate(evaluate_saved_model=True, sample_version=None, model_alias=None, model=None, X_test=None, y_test = None):
+
+def evaluate(
+    evaluate_saved_model=True,
+    sample_version=None,
+    model_alias=None,
+    model=None,
+    X_test=None,
+    y_test=None,
+):
     """
     Evaluate a model using various regression metrics.
-    
+
     Parameters:
         evaluate_saved_model (bool): Whether to evaluate a saved model or a provided model.
         sample_version (str): Version of the sample to use for extracting features.
@@ -21,7 +34,7 @@ def evaluate(evaluate_saved_model=True, sample_version=None, model_alias=None, m
 
     if evaluate_saved_model:
         # Extract features and target using the provided sample version
-        X, y = extract_features(name = "features_target", version=sample_version)
+        X, y = extract_features(name="features_target", version=sample_version)
         model = load_local_model(model_alias)
     else:
         # Load the local model using the provided alias
@@ -39,13 +52,13 @@ def evaluate(evaluate_saved_model=True, sample_version=None, model_alias=None, m
     print(f"Mean Squared Error (MSE): {mse}")
     print(f"Mean Absolute Error (MAE): {mae}")
     print(f"R^2 Score: {r2}")
-    print(f'MAPE: {mape}')
+    print(f"MAPE: {mape}")
+
 
 @hydra.main(config_path="../configs", config_name="main", version_base=None)
-def main(cfg = None):
+def main(cfg=None):
     evaluate(
-        sample_version=cfg.evaluate_sample_version,
-        model_alias=cfg.evaluate_model_alias
+        sample_version=cfg.evaluate_sample_version, model_alias=cfg.evaluate_model_alias
     )
 
 

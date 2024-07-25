@@ -5,22 +5,21 @@ import hydra
 
 from data import extract_features
 
-@hydra.main(config_path="../configs", config_name="main", version_base=None) 
+
+@hydra.main(config_path="../configs", config_name="main", version_base=None)
 def predict(cfg=None):
     """
     Function to make predictions using a deployed model.
-    
+
     Parameters:
         cfg (Config): Configuration object provided by Hydra.
     """
     # Extract features and target from ZenML artifact store
-    X, y = extract_features(name="features_target", 
-                            version=cfg.example_version)
-
+    X, y = extract_features(name="features_target", version=cfg.example_version)
 
     # Generate a random index
     random_index = random.randint(0, len(X) - 1)
-    
+
     # Select the example and its corresponding target
     example = X.iloc[random_index, :]
     example_target = y[random_index]
@@ -36,7 +35,7 @@ def predict(cfg=None):
     )
 
     # Print the prediction and the actual target value
-    print("\nPrediction:", response.json()['predictions'])
+    print("\nPrediction:", response.json()["predictions"])
     print("Target:", example_target)
 
 

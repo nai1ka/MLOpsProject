@@ -1,8 +1,8 @@
 import json
-import pandas as pd
-import numpy as np
 import os
 import zenml
+import pandas as pd
+import numpy as np
 import dvc.api
 from zenml.client import Client
 from great_expectations.data_context import FileDataContext
@@ -11,9 +11,12 @@ from sklearn.preprocessing import OneHotEncoder, FunctionTransformer, MinMaxScal
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.compose import ColumnTransformer
 from zenml import save_artifact
-from zenml.integrations.sklearn.materializers.sklearn_materializer import SklearnMaterializer
+from zenml.integrations.sklearn.materializers.sklearn_materializer import (
+    SklearnMaterializer,
+)
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
+
 
 def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
     """
@@ -40,10 +43,7 @@ def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
 
     # Get the URL in DVC remote storage
     path = dvc.api.get_url(
-        rev=version,
-        path=data_path,
-        remote=data_store,
-        repo=BASE_PATH
+        rev=version, path=data_path, remote=data_store, repo=BASE_PATH
     )
 
     # Load the data into a DataFrame
@@ -53,11 +53,18 @@ def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
     return df, version
 
 
-def transform_data(df, cfg, version=None, return_df=False, only_X=False, transformer_version=None,
-                   only_transform=False, ):
+def transform_data(
+    df,
+    cfg,
+    version=None,
+    return_df=False,
+    only_X=False,
+    transformer_version=None,
+    only_transform=False,
+):
     """
     Transforms the input DataFrame based on the configuration provided.
-    
+
     Parameters:
         df (pd.DataFrame): Input DataFrame.
         cfg (Config): Configuration object containing transformation settings.
@@ -66,7 +73,7 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
         only_X (bool): Whether to transform only the features without considering the target.
         transformer_version (str): Version of the transformer to use.
         only_transform (bool): Whether to only apply the transformation without fitting a new transformer.
-    
+
     Returns:
         pd.DataFrame or tuple: Transformed features (and target if applicable).
     """
@@ -75,28 +82,23 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
         initialize(version_base=None, config_path="../configs")
         cfg = compose(config_name="main")
 
-     # Extract necessary columns and features from the configuration
+    # Extract necessary columns and features from the configuration
     target_column = cfg.target_column
     day_of_week_column = cfg.day_of_week_column
     datetime_column = cfg.datetime_column
     categorical_features = list(cfg.categorical_columns)
     numerical_features = list(cfg.numerical_columns)
     date_features = list(cfg.date_columns)
-    cyclical_features = {
-        'hour': 24,
-        'day_of_week': 7,
-        'day': 31,
-        'month': 12
-    }
+    cyclical_features = {"hour": 24, "day_of_week": 7, "day": 31, "month": 12}
 
     if version is None:
         version = cfg.sample_version
-    
+
     if transformer_version is None:
         transformer_version = version
 
-    if (not only_X):
-         # Drop rows where the target column is NaN
+    if not only_X:
+        # Drop rows where the target column is NaN
         df = df.dropna(subset=[target_column])
 
     # Impute invalid datetime values
@@ -106,52 +108,58 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
 
-    if (not only_X):
+    if not only_X:
         y = df[[target_column]]
 
-     # Add day of week feature
+    # Add day of week feature
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
+    if only_transform:
 
-
-    if (only_transform):
-        
-         # Load the pre-trained transformer model
+        # Load the pre-trained transformer model
         X_model = get_artifact("X_transform_pipeline", version=transformer_version)
         X_preprocessed = X_model.transform(X)
     else:
 
         # Define transformers for different feature types
-        categorical_transformer = Pipeline(steps=[
-            ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-        ])
+        categorical_transformer = Pipeline(
+            steps=[
+                ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
+            ]
+        )
 
-        numerical_transformer = Pipeline(steps=[
-            ('scaler', MinMaxScaler())
-        ])
+        numerical_transformer = Pipeline(steps=[("scaler", MinMaxScaler())])
 
         def sin_transformer(period):
-            return FunctionTransformer(lambda x: np.sin(x.astype(float) / period * 2 * np.pi))
+            return FunctionTransformer(
+                lambda x: np.sin(x.astype(float) / period * 2 * np.pi)
+            )
 
         def cos_transformer(period):
-            return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
+            return FunctionTransformer(
+                lambda x: np.cos(x.astype(float) / period * 2 * np.pi)
+            )
 
         # Create transformers for cyclical date features
         dt_transformers = []
         for feature, period in cyclical_features.items():
-            dt_transformers.append((f'{feature}_sin', sin_transformer(period), [feature]))
-            dt_transformers.append((f'{feature}_cos', cos_transformer(period), [feature]))
+            dt_transformers.append(
+                (f"{feature}_sin", sin_transformer(period), [feature])
+            )
+            dt_transformers.append(
+                (f"{feature}_cos", cos_transformer(period), [feature])
+            )
         date_transformer = ColumnTransformer(transformers=dt_transformers)
 
         # Combine all transformers into a single preprocessor
         preprocessor = ColumnTransformer(
             transformers=[
-                ('numerical', numerical_transformer, numerical_features),
-                ('categorical', categorical_transformer, categorical_features),
-                ('date', date_transformer, date_features)
+                ("numerical", numerical_transformer, numerical_features),
+                ("categorical", categorical_transformer, categorical_features),
+                ("date", date_transformer, date_features),
             ],
             remainder="drop",
-            n_jobs=4
+            n_jobs=4,
         )
 
         # Create a pipeline with the preprocessor
@@ -160,19 +168,26 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
         # Fit the transformer model
         X_model = pipe.fit(X)
         X_preprocessed = X_model.transform(X)
-        
-        # Save the transformer model
-        save_artifact(data=X_model, name="X_transform_pipeline", tags=[transformer_version],
-                      materializer=SklearnMaterializer)
 
+        # Save the transformer model
+        save_artifact(
+            data=X_model,
+            name="X_transform_pipeline",
+            tags=[transformer_version],
+            materializer=SklearnMaterializer,
+        )
 
     # Get the names of transformed categorical features
-    cat_col_names = X_model.named_steps['columntransformer'].named_transformers_['categorical'].named_steps[
-        'onehot'].get_feature_names_out(categorical_features)
+    cat_col_names = (
+        X_model.named_steps["columntransformer"]
+        .named_transformers_["categorical"]
+        .named_steps["onehot"]
+        .get_feature_names_out(categorical_features)
+    )
     num_col_names = numerical_features
     date_col_names = []
     for feature in cyclical_features.keys():
-        date_col_names.extend([f'{feature}_sin', f'{feature}_cos'])
+        date_col_names.extend([f"{feature}_sin", f"{feature}_cos"])
 
     all_col_names = np.concatenate([num_col_names, cat_col_names, date_col_names])
 
@@ -186,9 +201,8 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
                 dff[col] = 0.0
         return dff
 
-
     # Load the required schema
-    with open(BASE_PATH + "/schema/schema.json", 'r') as file:
+    with open(BASE_PATH + "/schema/schema.json", "r") as file:
         column_names = json.load(file)
 
     # Add missing columns to the final DataFrame
@@ -201,19 +215,21 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
         df = pd.concat([X_final, y], axis=1)
         return df
     else:
-        if (only_X):
+        if only_X:
             return X_final
         return X_final, y
 
 
-def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def validate_features(
+    X: pd.DataFrame, y: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Validates the feature DataFrame against predefined expectations.
-    
+
     Parameters:
         X (pd.DataFrame): Features DataFrame.
         y (pd.DataFrame): Target DataFrame.
-    
+
     Returns:
         tuple: Validated features and target DataFrames.
     """
@@ -221,13 +237,30 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
     suite_name = "data_validation"
 
     # List of features to validate
-
-    # TODO
-    features = ['hour', 'month', 'source', 'destination', 'name', 'distance',
-                'surge_multiplier', 'latitude', 'longitude', 'apparentTemperature',
-                'short_summary', 'precipIntensity', 'precipProbability', 'humidity',
-                'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
-                'uvIndex', 'precipIntensityMax', 'day_of_week']
+    features = [
+        "hour",
+        "month",
+        "source",
+        "destination",
+        "name",
+        "distance",
+        "surge_multiplier",
+        "latitude",
+        "longitude",
+        "apparentTemperature",
+        "short_summary",
+        "precipIntensity",
+        "precipProbability",
+        "humidity",
+        "windSpeed",
+        "visibility",
+        "pressure",
+        "windBearing",
+        "cloudCover",
+        "uvIndex",
+        "precipIntensityMax",
+        "day_of_week",
+    ]
 
     context.add_or_update_expectation_suite(suite_name)
 
@@ -236,8 +269,7 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
 
     # Add a CSV asset for the new data
     sample = ds.add_csv_asset(
-        name="sample_csv",
-        filepath_or_buffer="data/samples/sample.csv"
+        name="sample_csv", filepath_or_buffer="data/samples/sample.csv"
     )
     data_asset = ds.add_dataframe_asset(name="sample_data")
     # Build a batch request
@@ -246,38 +278,68 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
 
     # Get a validator
     validator = context.get_validator(
-        batch_request=batch_request,
-        expectation_suite_name=suite_name
+        batch_request=batch_request, expectation_suite_name=suite_name
     )
 
     validator.expect_column_values_to_be_between("hour", min_value=0, max_value=24)
     validator.expect_column_values_to_be_between("month", min_value=1, max_value=12)
 
-    validator.expect_column_values_to_be_between("precipIntensity", min_value=0, max_value=1)
-    validator.expect_column_values_to_be_between("precipProbability", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between(
+        "precipIntensity", min_value=0, max_value=1
+    )
+    validator.expect_column_values_to_be_between(
+        "precipProbability", min_value=0, max_value=1
+    )
     validator.expect_column_values_to_be_between("humidity", min_value=0, max_value=1)
     validator.expect_column_values_to_be_between("visibility", min_value=0, max_value=1)
     validator.expect_column_values_to_be_between("cloudCover", min_value=0, max_value=1)
-    # TODO: check add day of week after transform
-    # validator.expect_column_values_to_be_between("day_of_week", min_value=0, max_value=7)
-    validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+    validator.expect_column_values_to_be_between(
+        "precipIntensityMax", min_value=0, max_value=1
+    )
 
-    positive_features = ["distance", "apparentTemperature", "pressure", "windSpeed", "visibility", "windBearing",
-                         "uvIndex", "surge_multiplier"]
+    positive_features = [
+        "distance",
+        "apparentTemperature",
+        "pressure",
+        "windSpeed",
+        "visibility",
+        "windBearing",
+        "uvIndex",
+        "surge_multiplier",
+    ]
 
     # Define expectations for positive features
     for feature in positive_features:
-        validator.expect_column_values_to_be_between(feature, min_value=0, max_value=None)
+        validator.expect_column_values_to_be_between(
+            feature, min_value=0, max_value=None
+        )
 
-    not_categorical_columns = ['hour', 'month', 'distance',
-                               'surge_multiplier', 'apparentTemperature', 'precipIntensity', 'precipProbability',
-                               'humidity',
-                               'windSpeed', 'visibility', 'pressure', 'windBearing', 'cloudCover',
-                               'uvIndex', 'precipIntensityMax', 'day_of_week']
-    encoded_features = [feature for feature in X.columns if feature not in not_categorical_columns]
+    not_categorical_columns = [
+        "hour",
+        "month",
+        "distance",
+        "surge_multiplier",
+        "apparentTemperature",
+        "precipIntensity",
+        "precipProbability",
+        "humidity",
+        "windSpeed",
+        "visibility",
+        "pressure",
+        "windBearing",
+        "cloudCover",
+        "uvIndex",
+        "precipIntensityMax",
+        "day_of_week",
+    ]
+    encoded_features = [
+        feature for feature in X.columns if feature not in not_categorical_columns
+    ]
 
     for categorical_features in encoded_features:
-        validator.expect_column_values_to_be_between("precipIntensityMax", min_value=0, max_value=1)
+        validator.expect_column_values_to_be_between(
+            "precipIntensityMax", min_value=0, max_value=1
+        )
 
     validator.save_expectation_suite(discard_failed_expectations=False)
     checkpoint = context.add_or_update_checkpoint(
@@ -294,16 +356,17 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
 
     return (X, y)
 
-def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:00:00'):
+
+def check_and_impute_datetime(df, datetime_column, impute_value="1970-01-01 00:00:00"):
     """
     Checks for invalid datetime entries in a specified column of a DataFrame.
     If an invalid datetime is found, imputes a specified default datetime value.
-    
+
     Parameters:
         df (pd.DataFrame): The input DataFrame.
         datetime_column (str): The column name in the DataFrame that contains datetime values.
         impute_value (str): The default datetime value to impute for invalid entries. Default is '1970-01-01 00:00:00'.
-    
+
     Returns:
         pd.DataFrame: A copy of the DataFrame with invalid datetime values imputed.
     """
@@ -326,9 +389,10 @@ def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:0
     # Impute the default datetime value for invalid entries
     df.loc[invalid_mask, datetime_column] = impute_datetime
 
-     # Convert the entire column to datetime
+    # Convert the entire column to datetime
     df[datetime_column] = pd.to_datetime(df[datetime_column])
     return df
+
 
 def save_features_target(X: pd.DataFrame, y: pd.DataFrame, version: str):
     """
@@ -397,11 +461,11 @@ def extract_features(name, version, return_df=False):
 
     print("size of df is ", df.shape)
 
-    if (return_df):
+    if return_df:
         return df
 
     # Separate features and target
-    X = df.drop('price', axis=1)
+    X = df.drop("price", axis=1)
     y = df.price
 
     print("shapes of X,y = ", X.shape, y.shape)

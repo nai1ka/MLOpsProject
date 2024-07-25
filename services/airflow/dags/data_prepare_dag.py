@@ -1,8 +1,5 @@
-from airflow import DAG
-
 from datetime import datetime
-import great_expectations as ge
-from airflow.operators.python import PythonOperator
+from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 
