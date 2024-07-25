@@ -1,4 +1,4 @@
-artifact_path: basic_ridge
+artifact_path: basic_rf
 flavors:
   python_function:
     env:
@@ -14,9 +14,9 @@ flavors:
     serialization_format: cloudpickle
     sklearn_version: 1.5.1
 mlflow_version: 2.14.1
-model_size_bytes: 3109
-model_uuid: c88dc3351907492aa935a9f4a6f362c8
-run_id: 4ad22c0c610a40f6be91d7eba0feef60
+model_size_bytes: 57057362
+model_uuid: d1259fac3c434aa2bd93d9ede781e828
+run_id: 09c9f9aa48ce40a3a00c664a121486c3
 saved_input_example_info:
   artifact_path: input_example.json
   format: tf-serving
@@ -82,4 +82,4 @@ signature:
     true}]'
   outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
   params: null
-utc_time_created: '2024-07-23 23:36:41.940983'
+utc_time_created: '2024-07-23 23:32:55.755057'
