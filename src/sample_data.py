@@ -26,6 +26,7 @@ def sample_data(cfg: DictConfig = None):
     if not os.path.exists(PROJECTPATH+"/data/"+dataset_name):
         print("File doesn't exist. Downloading...")
         df = pd.read_csv(cfg.google_drive_url)
+        df.to_csv(PROJECTPATH+"/data/"+dataset_name, index=False)
     else:
         df = pd.read_csv(PROJECTPATH+"/data/" + dataset_name)
 
