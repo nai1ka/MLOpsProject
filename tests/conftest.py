@@ -2,7 +2,9 @@ from hydra import compose, initialize
 import os
 import pytest
 
+
 PROJECTPATH = os.environ['PROJECTPATH']
+
 
 @pytest.fixture(scope="module")
 def config():
