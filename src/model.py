@@ -60,7 +60,7 @@ def train(X_train, y_train, cfg):
         n_jobs=cfg.cv_n_jobs,
         refit=evaluation_metric,
         cv=cv,
-        verbose=1,
+        verbose=2,
         return_train_score=True
     )
 

@@ -221,6 +221,8 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
     suite_name = "data_validation"
 
     # List of features to validate
+
+    # TODO
     features = ['hour', 'month', 'source', 'destination', 'name', 'distance',
                 'surge_multiplier', 'latitude', 'longitude', 'apparentTemperature',
                 'short_summary', 'precipIntensity', 'precipProbability', 'humidity',
