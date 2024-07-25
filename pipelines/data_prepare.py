@@ -47,9 +47,11 @@ def validate(X: pd.DataFrame, y: pd.DataFrame) -> Tuple[
         pd.DataFrame, ArtifactConfig(name="valid_target", tags=["data_preparation"])
     ],
 ]:
-    X, y = data.validate_features(X, y)
-
-    return X, y
+     with initialize(config_path="../configs", version_base=None):
+        config = compose(config_name="main")
+        X, y = data.validate_features(X, y, cfg = config)
+        return X, y
+   
 
 
 @step(enable_cache=False)

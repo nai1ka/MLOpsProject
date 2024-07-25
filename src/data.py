@@ -55,7 +55,7 @@ def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
 
 def transform_data(
     df,
-    cfg,
+    cfg = None,
     version=None,
     return_df=False,
     only_X=False,
@@ -221,7 +221,7 @@ def transform_data(
 
 
 def validate_features(
-    X: pd.DataFrame, y: pd.DataFrame
+    X: pd.DataFrame, y: pd.DataFrame, cfg = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Validates the feature DataFrame against predefined expectations.
@@ -233,34 +233,16 @@ def validate_features(
     Returns:
         tuple: Validated features and target DataFrames.
     """
+
+    if cfg is None:
+        # Initialize the configuration if not provided
+        initialize(version_base=None, config_path="../configs")
+        cfg = compose(config_name="main")
     context = FileDataContext(context_root_dir="../services/gx")
     suite_name = "data_validation"
 
     # List of features to validate
-    features = [
-        "hour",
-        "month",
-        "source",
-        "destination",
-        "name",
-        "distance",
-        "surge_multiplier",
-        "latitude",
-        "longitude",
-        "apparentTemperature",
-        "short_summary",
-        "precipIntensity",
-        "precipProbability",
-        "humidity",
-        "windSpeed",
-        "visibility",
-        "pressure",
-        "windBearing",
-        "cloudCover",
-        "uvIndex",
-        "precipIntensityMax",
-        "day_of_week",
-    ]
+    features = list(set(cfg.categorical_columns + cfg.numerical_columns + cfg.date_columns))
 
     context.add_or_update_expectation_suite(suite_name)
 
@@ -297,16 +279,7 @@ def validate_features(
         "precipIntensityMax", min_value=0, max_value=1
     )
 
-    positive_features = [
-        "distance",
-        "apparentTemperature",
-        "pressure",
-        "windSpeed",
-        "visibility",
-        "windBearing",
-        "uvIndex",
-        "surge_multiplier",
-    ]
+    positive_features = cfg.positive_features
 
     # Define expectations for positive features
     for feature in positive_features:
@@ -314,31 +287,15 @@ def validate_features(
             feature, min_value=0, max_value=None
         )
 
-    not_categorical_columns = [
-        "hour",
-        "month",
-        "distance",
-        "surge_multiplier",
-        "apparentTemperature",
-        "precipIntensity",
-        "precipProbability",
-        "humidity",
-        "windSpeed",
-        "visibility",
-        "pressure",
-        "windBearing",
-        "cloudCover",
-        "uvIndex",
-        "precipIntensityMax",
-        "day_of_week",
-    ]
+    not_categorical_columns = list(set(cfg.numerical_columns + cfg.date_columns))
+
     encoded_features = [
         feature for feature in X.columns if feature not in not_categorical_columns
     ]
 
-    for categorical_features in encoded_features:
+    for categorical_feature in encoded_features:
         validator.expect_column_values_to_be_between(
-            "precipIntensityMax", min_value=0, max_value=1
+            categorical_feature, min_value=0, max_value=1
         )
 
     validator.save_expectation_suite(discard_failed_expectations=False)

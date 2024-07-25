@@ -39,3 +39,12 @@ date_columns:
   - 'month'
   - 'day_of_week'
   - 'day'
+
+positive_features:
+  - 'distance'
+  - 'pressure'
+  - 'windSpeed'
+  - 'visibility'
+  - 'windBearing'
+  - 'uvIndex'
+  - 'surge_multiplier'
