@@ -1,11 +1,14 @@
-![Test code workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/test-code.yaml/badge.svg)
-![Validate model workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/validate-model.yaml/badge.svg)
+
+| Test code | Validate model |
+|-----------|----------------|
+| ![Test code workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/test-code.yaml/badge.svg)   | ![Validate model workflow](https://github.com/nai1ka/MLOpsProject/actions/workflows/validate-model.yaml/badge.svg)           |
+
 
 
 <br />
 <div align="center">
   <a href="https://github.com/nai1ka/MLOpsProject">
-    <img src="materials/logo.svg" alt="Logo" width="200">
+    <img src="logo.svg" alt="Logo" width="200">
   </a>
 
 <h3 align="center">Taxi Fare Price Prediction</h3>
@@ -67,7 +70,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
     ```
 4. Launch Flask using `app.py`
     ```sh
-    python3 api/app.py
+    python3 src/app.py
     ```
 5. Access the API at `http://localhost:8080/`
 
@@ -75,7 +78,6 @@ and weather conditions, maximizing revenue and improving customer satisfaction
    ```sh
    python3 src/ui.py
    ````
-   ![UI demo](materials/ui_demo.gif)
 
 ## Examples of API Requests
 
