@@ -36,7 +36,7 @@ def sample_data(cfg: DictConfig = None):
     sample_df = df[(sample_version - 1) * sample_size : sample_version * sample_size]
 
     # Save the sample
-    sample_df.to_csv(f"{PROJECTPATH}/data/samples/{dataset_name}", index=False)
+    sample_df.to_csv(f"{PROJECTPATH}/data/samples/{output_name}", index=False)
 
 
 if __name__ == "__main__":
