@@ -14,7 +14,8 @@ CONFIG = OmegaConf.create({
         "best_model_alias": "best_alias",
         "challenger_model_names": ["model1", "model2"],
         "challenger_model_aliases": ["alias1", "alias2"],
-        "r2_threshold": 0.8
+        "r2_threshold": 0.8,
+        "mape_threshold": 0.2
     }
 })
 
