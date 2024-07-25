@@ -23,7 +23,17 @@ entry_points:
 
   validate:
     command: "python src/validate.py"
-
+  
+  deploy:
+    parameters:
+      model_alias:
+        type: string
+        default: "champion"
+      model_name:
+        type: string
+        default: "random_forest"
+    command: "bash scripts/deploy_docker.sh -a {model_alias} -m {model_name}"
+  
   predict:
     parameters:
       example_version: 
@@ -38,7 +48,7 @@ entry_points:
       random_state:
         type: float
         default: 88
-      
-    # src/predict.py is decorated with @hydra.main to pass parameters at runtime
+  # src/predict.py is decorated with @hydra.main to pass parameters at runtime
     command: "python src/predict.py ++example_version={example_version} ++hostname={hostname} ++port={port} ++random_state={random_state}"
-    # TO RUN: mlflow run . --env-manager local -e predict -P example_version=v1 -P port=5151 -P random_state=14
+  # TO RUN: mlflow run . --env-manager local -e predict -P example_version=v1 -P port=5151 -P random_state=14
+    

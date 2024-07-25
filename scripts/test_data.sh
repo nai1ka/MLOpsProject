@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-cd ../src
+cd $PWD/src
 
 # Step 1: Take a data sample
 echo "Taking a data sample..."

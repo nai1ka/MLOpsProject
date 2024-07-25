@@ -67,7 +67,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
     ```
 4. Launch Flask using `app.py`
     ```sh
-    python3 src/app.py
+    python3 api/app.py
     ```
 5. Access the API at `http://localhost:8080/`
 
