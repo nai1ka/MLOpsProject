@@ -17,8 +17,6 @@ def predict(cfg=None):
     X, y = extract_features(name="features_target", 
                             version=cfg.example_version)
 
-    # Set the random state for reproducibility
-    random.seed(555)
 
     # Generate a random index
     random_index = random.randint(0, len(X) - 1)
