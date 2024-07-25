@@ -59,14 +59,14 @@ def test_transform_data(config):
 
 @patch("src.data.FileDataContext")
 @patch("src.data.get_artifact")
-def test_validate_features(mock_get_artifact, MockFileDataContext):
+def test_validate_features(mock_get_artifact, MockFileDataContext, config):
     mock_context = MockFileDataContext.return_value
     mock_context.get_validator.return_value = MagicMock()
     mock_context.add_or_update_expectation_suite.return_value = None
     mock_get_artifact.return_value = pd.DataFrame()
 
     df = pd.DataFrame({"hour": [1], "month": [1], "precipIntensity": [0.5]})
-    X_validated, y = validate_features(df, pd.DataFrame())
+    X_validated, y = validate_features(df, pd.DataFrame(), cfg=config)
 
     assert X_validated.equals(df)
     mock_context.add_or_update_expectation_suite.assert_called_once()
