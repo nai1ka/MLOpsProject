@@ -12,7 +12,6 @@ import importlib
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 def train(X_train, y_train, cfg):
-
     # Define the model hyperparameters
     params = cfg.model.params
 

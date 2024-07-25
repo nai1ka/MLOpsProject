@@ -1,5 +1,3 @@
-# src/validate.py
-
 import os
 
 import pandas as pd
@@ -18,8 +16,7 @@ hydra.core.global_hydra.GlobalHydra.instance().clear()
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 
-@hydra.main(config_path="../configs", config_name="main")
-def validate(cfg: DictConfig=None):
+def core_validate(cfg: DictConfig=None):
     test_version = cfg.test_data_version
 
     if(not "sample_url" in cfg):
@@ -104,6 +101,11 @@ def validate(cfg: DictConfig=None):
         else:
             print(f"Model {model_name} has vulnerabilities!")
 
+
+@hydra.main(config_path="../configs", config_name="main")
+def validate(cfg: DictConfig=None):
+    core_validate(cfg)
+    
 
 if __name__ == "__main__":
     validate()

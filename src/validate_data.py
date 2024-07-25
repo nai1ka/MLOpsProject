@@ -5,8 +5,7 @@ from great_expectations.data_context import FileDataContext
 import sys
 
 
-@hydra.main(version_base=None, config_path="../configs", config_name="main")
-def validate_initial_data(cfg: DictConfig = None):
+def validate_data(cfg: DictConfig = None):
     """Validate the initial data using Great Expectations"""
     context = FileDataContext(context_root_dir="../services/gx")
 
@@ -19,7 +18,7 @@ def validate_initial_data(cfg: DictConfig = None):
     # Add a CSV asset for the new data
     sample = ds.add_csv_asset(
         name="sample_csv",
-        filepath_or_buffer="../data/samples/sample.csv"
+        filepath_or_buffer=f"../{cfg.data_path}"
     )
 
     # Build a batch request
@@ -44,6 +43,9 @@ def validate_initial_data(cfg: DictConfig = None):
 
     print("All data validations passed.")
 
+@hydra.main(version_base=None, config_path="../configs", config_name="main")
+def validate_initial_data(cfg=None):
+    validate_data(cfg)
 
 if __name__ == "__main__":
     validate_initial_data()
