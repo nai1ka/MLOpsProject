@@ -75,7 +75,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
    ```sh
    python3 src/ui.py
    ````
-   ![UI demo](materials/ui_demo.gif)
+   ![UI demo](materials/ui_demo.mp4)
 
 ## Examples of API Requests
 
