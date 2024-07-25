@@ -5,3 +5,4 @@ airflow-webserver-monitor.pid
 airflow-webserver.ogiut
 airflow-webserver.err
 airflow.db
+logs
