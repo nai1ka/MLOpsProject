@@ -202,8 +202,7 @@ def transform_data(
         return dff
 
     # Load the required schema
-    with open(BASE_PATH + "/schema/schema.json", "r") as file:
-        column_names = json.load(file)
+    column_names = cfg.schema
 
     # Add missing columns to the final DataFrame
     X_final = add_missing_columns(X_final, column_names)

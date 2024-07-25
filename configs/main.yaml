@@ -9,6 +9,7 @@ defaults:
   - evaluate
   - cicd
   - ui
+  - schema
 
 hydra:
   sweeper:
