@@ -128,6 +128,5 @@ def validate(cfg: DictConfig=None):
         else:
             print(f"Model {model_name} has vulnerabilities!")
 
-
 if __name__ == "__main__":
     validate()
