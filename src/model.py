@@ -12,32 +12,45 @@ import importlib
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
 def train(X_train, y_train, cfg):
+    """
+    Train a machine learning model using GridSearchCV.
+    
+    Parameters:
+        X_train (pd.DataFrame): Training features.
+        y_train (pd.DataFrame): Training target.
+        cfg (Config): Configuration object provided by Hydra.
+
+    Returns:
+        GridSearchCV: Fitted GridSearchCV object.
+    """
 
     # Define the model hyperparameters
     params = cfg.model.params
 
     # Train the model
-    module_name = cfg.model.module_name # e.g. "sklearn.linear_model"
-    class_name  = cfg.model.class_name # e.g. "LogisticRegression"
+    module_name = cfg.model.module_name
+    class_name  = cfg.model.class_name
 
-    # We will create the estimator at runtime
     import importlib
 
-    # Load "module.submodule.MyClass"
+    # Dynamically import the module and class
     class_instance = getattr(importlib.import_module(module_name), class_name)
 
+    # Instantiate the estimator
     estimator = class_instance(**params)
 
-    # Grid search with cross validation
+    # Define cross-validation strategy
     from sklearn.model_selection import KFold
     cv = KFold(n_splits=cfg.model.folds, random_state=cfg.random_state, shuffle=True)
 
     param_grid = dict(params)
 
+    # Define the scoring metrics
     scoring = list(cfg.model.metrics.values()) 
 
     evaluation_metric = cfg.model.evaluation_metric
 
+    # Initialize GridSearchCV
     gs = GridSearchCV(
         estimator = estimator,
         param_grid = param_grid,
@@ -49,12 +62,25 @@ def train(X_train, y_train, cfg):
         return_train_score = True
     )
 
+    # Fit the GridSearchCV
     gs.fit(X_train, y_train)
 
     return gs
 
 def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
+    """
+    Log metadata and artifacts to MLflow.
+    
+    Parameters:
+        cfg (Config): Configuration object provided by Hydra.
+        gs (GridSearchCV): Fitted GridSearchCV object.
+        X_train (pd.DataFrame): Training features.
+        y_train (pd.DataFrame): Training target.
+        X_test (pd.DataFrame): Test features.
+        y_test (pd.DataFrame): Test target.
+    """
 
+    # Extract cross-validation results
     cv_results = pd.DataFrame(gs.cv_results_).filter(regex=r'std_|mean_|param_').sort_index(axis=1)
     best_metrics_values = [result[1][gs.best_index_] for result in gs.cv_results_.items()]
     best_metrics_keys = [metric for metric in gs.cv_results_]
@@ -73,6 +99,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         # Create a new MLflow Experiment
         experiment_id = mlflow.create_experiment(name=experiment_name)
     except mlflow.exceptions.MlflowException as e:
+        # If experiment already exists, get its ID
         experiment_id = mlflow.get_experiment_by_name(name=experiment_name).experiment_id # type: ignore
     
     print("experiment-id : ", experiment_id)
@@ -90,7 +117,7 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
     # Parent run
     with mlflow.start_run(run_name = run_name, experiment_id = experiment_id) as run:
-
+        # Log training and testing datasets
         df_train_dataset = mlflow.data.pandas_dataset.from_pandas(df = df_train, targets = cfg.target_column) # type: ignore
         df_test_dataset = mlflow.data.pandas_dataset.from_pandas(df = df_test, targets = cfg.target_column) # type: ignore
         mlflow.log_input(df_train_dataset, "training")
@@ -106,6 +133,14 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
         mlflow.set_tag(cfg.model.tag_key, cfg.model.tag_value)
 
         def save_plot(fig, filename, artifact_path="plots"):
+            """
+            Save a plot as an artifact in MLflow.
+            
+            Parameters:
+                fig (matplotlib.figure.Figure): Matplotlib figure to save.
+                filename (str): Filename for the saved plot.
+                artifact_path (str): Path in MLflow to store the artifact.
+            """
             plt_path = f"{filename}.png"
             fig.savefig(plt_path)
             mlflow.log_artifact(plt_path, artifact_path=artifact_path)
@@ -220,6 +255,17 @@ def log_metadata(cfg, gs, X_train, y_train, X_test, y_test):
 
 
 def get_models_with_alias(model_name,model_alias, return_version = False):
+    """
+    Retrieve model from MLflow registry using model name and alias.
+    
+    Parameters:
+        model_name (str): Name of the model in the MLflow registry.
+        model_alias (str): Alias of the model version in the MLflow registry.
+        return_version (bool): Whether to return the model version information. Default is False.
+
+    Returns:
+        Model object or tuple: Loaded model or tuple containing the model and its version info.
+    """
     client = mlflow.MlflowClient()
     model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
     if(return_version):
@@ -227,4 +273,35 @@ def get_models_with_alias(model_name,model_alias, return_version = False):
     return model
 
 def save_model(model, model_alias):
+    """
+    Save a model locally using MLflow.
+    
+    Parameters:
+        model: Model to be saved.
+        model_alias (str): Alias name for saving the model.
+    """
     mlflow.sklearn.save_model(model, BASE_PATH+"/models/"+model_alias)
+
+def download_model(model_name, model_alias):
+    """
+    Download a model from MLflow registry to local storage.
+    
+    Parameters:
+        model_name (str): Name of the model in the MLflow registry.
+        model_alias (str): Alias of the model version in the MLflow registry.
+    """
+    client = mlflow.MlflowClient()
+    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}@{model_alias}")
+    client.download_artifacts(model.metadata.run_id, "basic_rf", "models")
+
+def load_local_model(name):
+    """
+    Load a locally saved model using MLflow.
+    
+    Parameters:
+        name (str): Name of the locally saved model.
+
+    Returns:
+        Model object: Loaded model.
+    """
+    return mlflow.sklearn.load_model(BASE_PATH+"/models/"+name)

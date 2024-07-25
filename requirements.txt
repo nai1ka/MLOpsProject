@@ -22,4 +22,3 @@ shyaml
 mlflow
 giskard==2.14.0
 gradio==3.50.2
-kaggle==1.6.14

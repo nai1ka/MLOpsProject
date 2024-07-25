@@ -10,6 +10,7 @@ import json
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
 
+# Load the model from the api folder
 model = mlflow.pyfunc.load_model(os.path.join(BASE_PATH, "api", "model_dir"))
 
 app = Flask(__name__)
@@ -39,6 +40,7 @@ def home():
 @app.route("/predict", methods = ["POST"])
 def predict():
 
+	# Read the data from request
 	content = request.get_json()
 	formatted_content = json.dumps(content, indent=2)
 

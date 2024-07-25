@@ -2,24 +2,18 @@ import json
 import pandas as pd
 import numpy as np
 import os
-import yaml
 import zenml
 import dvc.api
 from zenml.client import Client
-from great_expectations import DataContext
-from great_expectations.checkpoint import Checkpoint
 from great_expectations.data_context import FileDataContext
 from hydra import compose, initialize
 from sklearn.preprocessing import OneHotEncoder, FunctionTransformer, MinMaxScaler
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.compose import ColumnTransformer
-from zenml import save_artifact, load_artifact
+from zenml import save_artifact
 from zenml.integrations.sklearn.materializers.sklearn_materializer import SklearnMaterializer
 
-import sample_data
-
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
-
 
 def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
     """
@@ -59,29 +53,29 @@ def extract_data(cfg=None, version=None) -> tuple[pd.DataFrame, str]:
     return df, version
 
 
-def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:00:00'):
-    impute_datetime = pd.to_datetime(impute_value)
-
-    def is_valid_datetime(dt_str):
-        try:
-            pd.to_datetime(dt_str)
-            return True
-        except:
-            return False
-
-    df = df.copy()
-    invalid_mask = ~df[datetime_column].apply(is_valid_datetime)
-    df.loc[invalid_mask, datetime_column] = impute_datetime
-    df[datetime_column] = pd.to_datetime(df[datetime_column])
-    return df
-
-
 def transform_data(df, cfg, version=None, return_df=False, only_X=False, transformer_version=None,
                    only_transform=False, ):
+    """
+    Transforms the input DataFrame based on the configuration provided.
+    
+    Parameters:
+        df (pd.DataFrame): Input DataFrame.
+        cfg (Config): Configuration object containing transformation settings.
+        version (str): Version of the transformation to use.
+        return_df (bool): Whether to return the entire DataFrame or just the transformed features.
+        only_X (bool): Whether to transform only the features without considering the target.
+        transformer_version (str): Version of the transformer to use.
+        only_transform (bool): Whether to only apply the transformation without fitting a new transformer.
+    
+    Returns:
+        pd.DataFrame or tuple: Transformed features (and target if applicable).
+    """
     if cfg is None:
+        # Initialize the configuration if not provided
         initialize(version_base=None, config_path="../configs")
         cfg = compose(config_name="main")
 
+     # Extract necessary columns and features from the configuration
     target_column = cfg.target_column
     day_of_week_column = cfg.day_of_week_column
     datetime_column = cfg.datetime_column
@@ -97,24 +91,37 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
 
     if version is None:
         version = cfg.sample_version
+    
+    if transformer_version is None:
+        transformer_version = version
+
     if (not only_X):
+         # Drop rows where the target column is NaN
         df = df.dropna(subset=[target_column])
+
+    # Impute invalid datetime values
     df = check_and_impute_datetime(df, datetime_column)
 
+    # Select feature columns
     X_cols = [col for col in df.columns if col not in target_column]
     X = df[X_cols]
+
     if (not only_X):
         y = df[[target_column]]
 
+     # Add day of week feature
     X[day_of_week_column] = pd.to_datetime(df[datetime_column]).dt.dayofweek
 
+
+
     if (only_transform):
-        if transformer_version is None:
-            transformer_version = version
+        
+         # Load the pre-trained transformer model
         X_model = get_artifact("X_transform_pipeline", version=transformer_version)
         X_preprocessed = X_model.transform(X)
     else:
 
+        # Define transformers for different feature types
         categorical_transformer = Pipeline(steps=[
             ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
         ])
@@ -129,12 +136,14 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
         def cos_transformer(period):
             return FunctionTransformer(lambda x: np.cos(x.astype(float) / period * 2 * np.pi))
 
+        # Create transformers for cyclical date features
         dt_transformers = []
         for feature, period in cyclical_features.items():
             dt_transformers.append((f'{feature}_sin', sin_transformer(period), [feature]))
             dt_transformers.append((f'{feature}_cos', cos_transformer(period), [feature]))
         date_transformer = ColumnTransformer(transformers=dt_transformers)
 
+        # Combine all transformers into a single preprocessor
         preprocessor = ColumnTransformer(
             transformers=[
                 ('numerical', numerical_transformer, numerical_features),
@@ -145,16 +154,19 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
             n_jobs=4
         )
 
+        # Create a pipeline with the preprocessor
         pipe = make_pipeline(preprocessor)
 
+        # Fit the transformer model
         X_model = pipe.fit(X)
         X_preprocessed = X_model.transform(X)
-
-        if transformer_version is None:
-            transformer_version = version
+        
+        # Save the transformer model
         save_artifact(data=X_model, name="X_transform_pipeline", tags=[transformer_version],
                       materializer=SklearnMaterializer)
 
+
+    # Get the names of transformed categorical features
     cat_col_names = X_model.named_steps['columntransformer'].named_transformers_['categorical'].named_steps[
         'onehot'].get_feature_names_out(categorical_features)
     num_col_names = numerical_features
@@ -164,8 +176,8 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
 
     all_col_names = np.concatenate([num_col_names, cat_col_names, date_col_names])
 
+    # Create a DataFrame with the transformed features
     X_final = pd.DataFrame(X_preprocessed, columns=all_col_names)
-
     X_final.columns = X_final.columns.astype(str)
 
     def add_missing_columns(dff, required_columns):
@@ -174,10 +186,15 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
                 dff[col] = 0.0
         return dff
 
+
+    # Load the required schema
     with open(BASE_PATH + "/schema/schema.json", 'r') as file:
         column_names = json.load(file)
+
+    # Add missing columns to the final DataFrame
     X_final = add_missing_columns(X_final, column_names)
 
+    # Ensure the right order of columns in the final dataset
     X_final = X_final[column_names]
 
     if return_df:
@@ -190,8 +207,20 @@ def transform_data(df, cfg, version=None, return_df=False, only_X=False, transfo
 
 
 def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Validates the feature DataFrame against predefined expectations.
+    
+    Parameters:
+        X (pd.DataFrame): Features DataFrame.
+        y (pd.DataFrame): Target DataFrame.
+    
+    Returns:
+        tuple: Validated features and target DataFrames.
+    """
     context = FileDataContext(context_root_dir="../services/gx")
     suite_name = "data_validation"
+
+    # List of features to validate
     features = ['hour', 'month', 'source', 'destination', 'name', 'distance',
                 'surge_multiplier', 'latitude', 'longitude', 'apparentTemperature',
                 'short_summary', 'precipIntensity', 'precipProbability', 'humidity',
@@ -233,6 +262,8 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
 
     positive_features = ["distance", "apparentTemperature", "pressure", "windSpeed", "visibility", "windBearing",
                          "uvIndex", "surge_multiplier"]
+
+    # Define expectations for positive features
     for feature in positive_features:
         validator.expect_column_values_to_be_between(feature, min_value=0, max_value=None)
 
@@ -261,6 +292,41 @@ def validate_features(X: pd.DataFrame, y: pd.DataFrame) -> tuple[pd.DataFrame, p
 
     return (X, y)
 
+def check_and_impute_datetime(df, datetime_column, impute_value='1970-01-01 00:00:00'):
+    """
+    Checks for invalid datetime entries in a specified column of a DataFrame.
+    If an invalid datetime is found, imputes a specified default datetime value.
+    
+    Parameters:
+        df (pd.DataFrame): The input DataFrame.
+        datetime_column (str): The column name in the DataFrame that contains datetime values.
+        impute_value (str): The default datetime value to impute for invalid entries. Default is '1970-01-01 00:00:00'.
+    
+    Returns:
+        pd.DataFrame: A copy of the DataFrame with invalid datetime values imputed.
+    """
+
+    # Convert the impute_value to a datetime object
+    impute_datetime = pd.to_datetime(impute_value)
+
+    def is_valid_datetime(dt_str):
+        try:
+            pd.to_datetime(dt_str)
+            return True
+        except:
+            return False
+
+    df = df.copy()
+
+    # Create a mask for invalid datetime entries
+    invalid_mask = ~df[datetime_column].apply(is_valid_datetime)
+
+    # Impute the default datetime value for invalid entries
+    df.loc[invalid_mask, datetime_column] = impute_datetime
+
+     # Convert the entire column to datetime
+    df[datetime_column] = pd.to_datetime(df[datetime_column])
+    return df
 
 def save_features_target(X: pd.DataFrame, y: pd.DataFrame, version: str):
     """
@@ -339,7 +405,3 @@ def extract_features(name, version, return_df=False):
     print("shapes of X,y = ", X.shape, y.shape)
 
     return X, y
-
-
-if __name__ == "__main__":
-    df, version = extract_data()

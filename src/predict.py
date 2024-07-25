@@ -7,6 +7,12 @@ from data import extract_features
 
 @hydra.main(config_path="../configs", config_name="main", version_base=None) 
 def predict(cfg=None):
+    """
+    Function to make predictions using a deployed model.
+    
+    Parameters:
+        cfg (Config): Configuration object provided by Hydra.
+    """
     # Extract features and target from ZenML artifact store
     X, y = extract_features(name="features_target", 
                             version=cfg.example_version)

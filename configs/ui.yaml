@@ -1,0 +1,12 @@
+sources: ['Haymarket Square', 'Back Bay', 'North End', 'North Station', 'Beacon Hill',
+ 'Boston University', 'Fenway', 'South Station', 'Theatre District',
+ 'West End', 'Financial District' ,'Northeastern University']
+destinations: ['North Station' ,'Northeastern University', 'West End' ,'Haymarket Square',
+ 'South Station' ,'Fenway', 'Theatre District', 'Beacon Hill', 'Back Bay',
+ 'North End', 'Financial District', 'Boston University']
+
+names: ['Shared', 'Lux' ,'Lyft' ,'Lux Black XL', 'Lyft XL', 'Lux Black', 'UberXL',
+ 'Black', 'UberX', 'WAV', 'Black SUV' ,'UberPool', 'Taxi']
+
+summaries: [' Mostly Cloudy ', ' Rain ' ,' Clear ' ,' Partly Cloudy ', ' Overcast ',
+ ' Light Rain ' ,' Foggy ', ' Possible Drizzle ' ,' Drizzle ']

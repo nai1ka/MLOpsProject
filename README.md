@@ -63,6 +63,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
 3. Configure the environment variables
     ```sh
     export PROJECTPATH=$PWD
+    export PYTHONPATH=$PWD/src
     ```
 4. Launch Flask using `app.py`
     ```sh

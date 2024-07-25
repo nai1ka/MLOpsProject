@@ -7,7 +7,15 @@ import sys
 
 @hydra.main(version_base=None, config_path="../configs", config_name="main")
 def validate_initial_data(cfg: DictConfig = None):
-    """Validate the initial data using Great Expectations"""
+    """
+    Validate the initial data using Great Expectations.
+    
+    This function initializes a Great Expectations context, sets up a data source,
+    creates a batch request, and validates the data against a predefined expectation suite.
+    
+    Args:
+        cfg (DictConfig): Configuration object from Hydra.
+    """
     context = FileDataContext(context_root_dir="../services/gx")
 
     # Load the expectation suite
