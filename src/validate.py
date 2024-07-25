@@ -60,16 +60,12 @@ def core_validate(cfg: DictConfig = None):
         cat_columns=CATEGORICAL_COLUMNS
     )
 
-    model_name = cfg.model.best_model_name
-    model_alias = cfg.model.best_model_alias
-    model_aliases = cfg.model.challenger_model_aliases
+    model_aliases = cfg.model.model_aliases_to_validate
 
     for model_alias in model_aliases:
         # Load the local model and metadata (from models folder) using its alias
         model_name, model_version = read_model_meta(model_alias)
         model: mlflow.pyfunc.PyFuncModel = load_local_model(model_alias)
-
-        # Add missing columns to the dataframe and fill them with zeros
 
         def predict(raw_df):
             # Transform data before prediction
