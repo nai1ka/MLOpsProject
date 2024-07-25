@@ -22,8 +22,7 @@ entry_points:
         type: string
         default: "champion"
     command: "python src/evaluate.py evaluate_sample_version={evaluate_sample_version} evaluate_model_alias={evaluate_model_alias}"
-    # command: "python src/evaluate.py ++evaluate_sample_version={evaluate_sample_version} ++evaluate_model_alias={evaluate_model_alias}"
-    # mlflow run . --env-manager local -e evaluate
+    # TO RUN: mlflow run . --env-manager local -e evaluate
 
   predict:
     parameters:

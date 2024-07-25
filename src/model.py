@@ -313,3 +313,30 @@ def load_local_model(name):
         Model object: Loaded model.
     """
     return mlflow.sklearn.load_model(BASE_PATH + "/models/" + name)
+
+
+def read_model_meta(model_alias):
+    """
+    Read the model metadata from the specified alias directory (model name and model version).
+
+    Parameters:
+        model_alias (str): The alias of the model whose metadata is to be read.
+
+    Returns:
+        tuple: A tuple containing:
+            - model_name (str): The name of the model.
+            - model_version (str): The version of the model.
+    """
+    metadata_file_path = os.path.join(BASE_PATH, "models", model_alias, "registered_model_meta")
+    model_name = None
+    model_version = None
+    with open(metadata_file_path, 'r') as file:
+        for line in file:
+            key, value = line.strip().split(":")
+            key = key.strip()
+            value = value.strip()
+            if key == "model_name":
+                model_name = value
+            elif key == "model_version":
+                model_version = value
+    return model_name, model_version
