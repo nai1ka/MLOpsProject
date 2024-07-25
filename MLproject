@@ -22,8 +22,7 @@ entry_points:
         type: string
         default: "champion"
     command: "python src/evaluate.py evaluate_sample_version={evaluate_sample_version} evaluate_model_alias={evaluate_model_alias}"
-    # command: "python src/evaluate.py ++evaluate_sample_version={evaluate_sample_version} ++evaluate_model_alias={evaluate_model_alias}"
-    # mlflow run . --env-manager local -e evaluate
+    # TO RUN: mlflow run . --env-manager local -e evaluate
 
   predict:
     parameters:
@@ -42,5 +41,4 @@ entry_points:
       
     # src/predict.py is decorated with @hydra.main to pass parameters at runtime
     command: "python src/predict.py ++example_version={example_version} ++hostname={hostname} ++port={port} ++random_state={random_state}"
-    # TODO
     # TO RUN: mlflow run . --env-manager local -e predict -P example_version=v1 -P port=5151 -P random_state=14

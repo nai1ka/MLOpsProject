@@ -1,13 +1,11 @@
 import os
-
 import giskard
 import hydra
 import mlflow
 import pandas as pd
 from data import extract_data, transform_data
-from evaluate import load_local_model
-from omegaconf import DictConfig, OmegaConf
-from pydantic import BaseModel
+from model import load_local_model, read_model_meta
+from omegaconf import DictConfig
 from sklearn.metrics import mean_absolute_percentage_error
 
 BASE_PATH = os.path.expandvars("$PROJECTPATH")
@@ -64,12 +62,11 @@ def core_validate(cfg: DictConfig = None):
 
     model_name = cfg.model.best_model_name
     model_alias = cfg.model.best_model_alias
-    model_names = cfg.model.challenger_model_names
     model_aliases = cfg.model.challenger_model_aliases
 
-    # TODO change name
-    for model_name, model_alias in zip(model_names, model_aliases):
-        # Load the local model (from models folder) using its alias
+    for model_alias in model_aliases:
+        # Load the local model and metadata (from models folder) using its alias
+        model_name, model_version = read_model_meta(model_alias)
         model: mlflow.pyfunc.PyFuncModel = load_local_model(model_alias)
 
         # Add missing columns to the dataframe and fill them with zeros
@@ -100,7 +97,7 @@ def core_validate(cfg: DictConfig = None):
         scan_results = giskard.scan(giskard_model, giskard_dataset, raise_exceptions=True)
 
         # Save the results in `html` file
-        scan_results_path = BASE_PATH + f"/reports/test_suite_{model_name}_{dataset_name}_{test_version}.html"
+        scan_results_path = f"{BASE_PATH}/reports/test_suite_{model_name}_{model_version}_{dataset_name}_{test_version}.html"
         scan_results.to_html(scan_results_path)
 
         suite_name = f"test_suite_{model_name}_{dataset_name}_{version}"
