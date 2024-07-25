@@ -5,7 +5,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/nai1ka/MLOpsProject">
-    <img src="logo.svg" alt="Logo" width="200">
+    <img src="materials/logo.svg" alt="Logo" width="200">
   </a>
 
 <h3 align="center">Taxi Fare Price Prediction</h3>
@@ -75,6 +75,7 @@ and weather conditions, maximizing revenue and improving customer satisfaction
    ```sh
    python3 src/ui.py
    ````
+   ![UI demo](materials/ui_demo.gif)
 
 ## Examples of API Requests
 
