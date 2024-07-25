@@ -20,9 +20,6 @@ Unfair taxi prices can lead to customer dissatisfaction and affect profitability
 and customer expectations. A machine learning model can be built to predict fair taxi prices based on time, location,
 and weather conditions, maximizing revenue and improving customer satisfaction
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ## Getting Started
 
@@ -97,7 +94,6 @@ curl -X POST localhost:5151/invocations \
       
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 
@@ -113,14 +109,8 @@ curl -X POST localhost:5151/invocations \
 * ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 * ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ## Contributors
 
 <a href="https://github.com/nai1ka"><img src="https://avatars.githubusercontent.com/u/40440192?v=4" title="nai1ka" width="80" height="80"></a>
 <a href="https://github.com/arinagoncharova2005"><img src="https://avatars.githubusercontent.com/u/71409384?v=4" title="arinagoncharova2005" width="80" height="80"></a>
 <a href="https://github.com/Zaurall"><img src="https://avatars.githubusercontent.com/u/117632304?v=4" title="Zaurall" width="80" height="80"></a>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
